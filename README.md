@@ -1,20 +1,22 @@
 # GENX-03
 
-Aplicacion web construida con Laravel 13, Filament 5 y Filament Shield. El panel administrativo permite gestionar usuarios, roles y permisos.
+Aplicación web desarrollada con **Laravel 13**, **Filament 5** y **Filament Shield**.
+
+El proyecto cuenta con un panel administrativo para la gestión de usuarios, roles y permisos.
 
 ## Requisitos
 
-Antes de comenzar, instala o verifica las siguientes herramientas:
+Antes de comenzar, asegúrate de tener instaladas las siguientes herramientas:
 
-- Windows 10 u 11.
-- Git.
-- PHP 8.3 o superior.
-- Composer 2.
-- Node.js 20.19 o superior, o Node.js 22.12 o superior.
-- npm.
-- Laravel Herd para Windows (recomendado).
+* Windows 10 u 11.
+* Git.
+* PHP 8.3 o superior.
+* Composer 2.
+* Node.js 20.19 o superior, o Node.js 22.12 o superior.
+* npm.
+* Laravel Herd para Windows.
 
-Puedes comprobar las versiones desde PowerShell:
+Puedes verificar las versiones desde PowerShell:
 
 ```powershell
 git --version
@@ -24,176 +26,345 @@ node -v
 npm -v
 ```
 
-Laravel Herd incluye un entorno local con PHP y el servidor web necesario para ejecutar aplicaciones Laravel. Descarga Herd desde [herd.laravel.com/windows](https://herd.laravel.com/windows) e instalalo con las opciones predeterminadas.
+### Laravel Herd
 
-## Descargar el proyecto
+Se recomienda utilizar **Laravel Herd** para ejecutar el proyecto localmente, ya que proporciona el entorno necesario para trabajar con aplicaciones Laravel en Windows.
 
-Clona el repositorio y entra en su carpeta:
+Puedes descargarlo desde:
+
+https://herd.laravel.com/windows
+
+Instálalo utilizando las opciones predeterminadas.
+
+---
+
+# Instalación del proyecto
+
+## 1. Clonar el repositorio
+
+Clona el repositorio y accede a la carpeta del proyecto:
 
 ```powershell
 git clone URL_DEL_REPOSITORIO
-Set-Location GEX-ANT-03-MAR-Z
+cd GEX-ANT-03-MAR-Z
 ```
 
-Reemplaza `URL_DEL_REPOSITORIO` por la URL real del repositorio. Si ya tienes el proyecto descargado, solo abre PowerShell en la carpeta del proyecto.
+Reemplaza `URL_DEL_REPOSITORIO` por la URL correspondiente al repositorio.
 
-## Configurar el proyecto
+Si ya tienes el proyecto descargado, simplemente abre PowerShell dentro de la carpeta del proyecto.
 
-### 1. Instalar dependencias de PHP
+---
 
-```powershell
-composer install
-```
+## 2. Configurar el archivo `.env`
 
-### 2. Crear el archivo de entorno
+El proyecto incluye un archivo `.env.example` con la configuración base necesaria.
 
-En PowerShell:
+Crea tu archivo `.env` a partir de este:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-No subas el archivo `.env` al repositorio. Contiene configuracion local y puede contener credenciales.
+El archivo `.env` contiene la configuración específica del entorno local, por lo que **no debe subirse al repositorio**.
 
-### 3. Crear la base de datos SQLite
+---
 
-Este proyecto usa SQLite por defecto. Crea el archivo de base de datos si todavía no existe:
+## 3. Instalar las dependencias de PHP
+
+Instala las dependencias del proyecto mediante Composer:
 
 ```powershell
-New-Item database\database.sqlite -ItemType File -Force
+composer install
 ```
 
-Genera la clave de la aplicacion:
+---
+
+## 4. Generar la clave de la aplicación
+
+Genera la clave de Laravel:
 
 ```powershell
 php artisan key:generate
 ```
 
-### 4. Instalar dependencias de JavaScript
+---
+
+## 5. Configurar la base de datos
+
+El proyecto está configurado para utilizar **SQLite por defecto**, por lo que no es necesario instalar o configurar un servidor de base de datos para comenzar a trabajar.
+
+### Opción A — SQLite
+
+Si quieres utilizar la configuración predeterminada, crea el archivo de base de datos:
+
+```powershell
+New-Item database\database.sqlite -ItemType File -Force
+```
+
+Verifica que el archivo `.env` tenga configurado:
+
+```env
+DB_CONNECTION=sqlite
+```
+
+Con SQLite no es necesario realizar ninguna configuración adicional.
+
+### Opción B — MySQL
+
+Si prefieres utilizar MySQL, puedes modificar la configuración de la base de datos en el archivo `.env`.
+
+Por ejemplo:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=genx_03
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Antes de ejecutar las migraciones, asegúrate de que:
+
+* MySQL esté instalado y ejecutándose.
+* La base de datos indicada en `DB_DATABASE` exista.
+* El usuario y contraseña configurados tengan permisos sobre la base de datos.
+
+> **Nota:** La base de datos es independiente de las dependencias del proyecto. Puedes trabajar con SQLite o configurar MySQL según tu entorno local.
+
+---
+
+## 6. Instalar las dependencias de JavaScript
+
+Instala las dependencias frontend:
 
 ```powershell
 npm install
 ```
 
-## Migraciones, usuario y permisos
+---
 
-Ejecuta las migraciones:
+## 7. Ejecutar las migraciones y datos iniciales
+
+Una vez configurada la base de datos, ejecuta las migraciones:
 
 ```powershell
 php artisan migrate
 ```
 
-Carga el usuario inicial definido en el seeder:
+Después, ejecuta los seeders para crear los datos iniciales:
 
 ```powershell
 php artisan db:seed
 ```
 
-Genera los permisos y las politicas de Filament Shield:
+El seeder crea un usuario de prueba que podrás utilizar para acceder al panel administrativo.
+
+---
+
+## 8. Configurar Filament Shield
+
+El proyecto utiliza **Filament Shield** para la gestión de roles y permisos.
+
+Genera los permisos y policies del proyecto:
 
 ```powershell
 php artisan shield:generate --all
 ```
 
-Asigna el rol de superadministrador al usuario con ID `1`:
+Después, asigna el rol de superadministrador al usuario de prueba:
 
 ```powershell
 php artisan shield:super-admin --user=1
 ```
 
-Si el usuario administrador tiene otro ID, consulta los usuarios con Tinker y cambia el valor del comando:
+> El comando anterior utiliza el usuario con ID `1`, que corresponde al usuario creado por el seeder en la configuración inicial del proyecto.
 
-```powershell
-php artisan tinker --execute="dump(App\Models\User::query()->get(['id', 'name', 'email'])->toArray());"
-```
-
-Limpia las caches despues de cambiar la configuracion o los permisos:
+Finalmente, limpia la caché de Laravel:
 
 ```powershell
 php artisan optimize:clear
 ```
 
-### Usuario inicial
+---
 
-El seeder crea estas credenciales de desarrollo:
+# Configuración con Laravel Herd
 
-| Campo | Valor |
-| --- | --- |
-| Correo | `test@example.com` |
-| Contraseña | `password` |
+Una vez instalado y configurado el proyecto, puedes registrarlo en Laravel Herd.
 
-Estas credenciales son solo para desarrollo. Cambia la contraseña antes de utilizar el proyecto en un entorno real.
+## 1. Abrir Herd
 
-## Ejecutar con Laravel Herd
+Inicia **Laravel Herd** y verifica que esté utilizando una versión de PHP compatible con el proyecto:
 
-1. Abre Herd y confirma que PHP 8.3 o superior esté seleccionado.
-2. Desde PowerShell, ubícate en la carpeta del proyecto.
-3. Registra la carpeta en Herd:
+**PHP 8.3 o superior.**
+
+## 2. Registrar el proyecto
+
+Desde PowerShell, ubicado dentro de la carpeta del proyecto, ejecuta:
 
 ```powershell
 herd link
 ```
 
-4. Abre en Herd la URL local asignada al proyecto. Normalmente tendrá un dominio `.test` basado en el nombre de la carpeta.
-5. En otra terminal, inicia Vite para compilar los recursos durante el desarrollo:
+Herd asignará un dominio local al proyecto, normalmente utilizando el nombre de la carpeta.
+
+Por ejemplo:
+
+```text
+http://gex-ant-03-mar-z.test
+```
+
+El dominio exacto puede variar dependiendo del nombre de la carpeta.
+
+## 3. Iniciar Vite
+
+En otra terminal, dentro del proyecto, ejecuta:
 
 ```powershell
 npm run dev
 ```
 
-El panel administrativo está disponible en:
+Mantén este proceso ejecutándose mientras trabajas en el proyecto para que Vite compile y actualice los recursos frontend.
+
+---
+
+# Acceder al panel administrativo
+
+Una vez completados todos los pasos anteriores, abre en el navegador:
 
 ```text
-/admin/login
+http://NOMBRE-DEL-PROYECTO.test/admin/login
 ```
 
-También puedes abrir la raíz del proyecto; `/` redirige automáticamente al inicio de sesión del panel.
+También puedes acceder a la raíz:
 
-## Ejecutar sin Herd
+```text
+http://NOMBRE-DEL-PROYECTO.test
+```
 
-Como alternativa, puedes utilizar el servidor de desarrollo de Laravel:
+La aplicación redirigirá automáticamente al inicio de sesión del panel administrativo.
+
+## Credenciales de prueba
+
+El seeder crea el siguiente usuario:
+
+| Campo      | Valor              |
+| ---------- | ------------------ |
+| Correo     | `test@example.com` |
+| Contraseña | `password`         |
+
+Utiliza estas credenciales para iniciar sesión.
+
+> **Importante:** Estas credenciales son únicamente para desarrollo local. No deben utilizarse en un entorno de producción.
+
+---
+
+# Flujo rápido de instalación
+
+Si ya tienes todos los requisitos instalados, el proceso básico es:
 
 ```powershell
-composer run dev
+git clone URL_DEL_REPOSITORIO
+cd GEX-ANT-03-MAR-Z
+
+Copy-Item .env.example .env
+
+composer install
+php artisan key:generate
+
+New-Item database\database.sqlite -ItemType File -Force
+
+npm install
+
+php artisan migrate
+php artisan db:seed
+
+php artisan shield:generate --all
+php artisan shield:super-admin --user=1
+
+php artisan optimize:clear
+
+herd link
+npm run dev
 ```
 
-Este comando inicia el servidor de Laravel, Vite y los servicios de desarrollo configurados en `composer.json`. Luego visita [http://localhost:8000/admin/login](http://localhost:8000/admin/login).
+Después abre:
 
-Para generar los recursos frontend sin modo desarrollo:
+```text
+http://NOMBRE-DEL-PROYECTO.test/admin/login
+```
+
+E inicia sesión con:
+
+```text
+Correo: test@example.com
+Contraseña: password
+```
+
+---
+
+# Estructura principal
+
+```text
+app/
+├── Filament/
+│   └── Resources/       Recursos del panel administrativo
+├── Models/              Modelos Eloquent
+└── Policies/            Policies de autorización
+
+config/
+└── filament-shield.php  Configuración de Filament Shield
+
+database/
+├── migrations/          Migraciones de la base de datos
+└── seeders/             Datos iniciales
+
+resources/
+└── ...                  Recursos frontend y vistas
+
+routes/
+└── ...                  Rutas de la aplicación
+```
+
+---
+
+# Comandos útiles
+
+### Limpiar caché
+
+```powershell
+php artisan optimize:clear
+```
+
+### Ver estado de las migraciones
+
+```powershell
+php artisan migrate:status
+```
+
+### Ejecutar las pruebas
+
+```powershell
+php artisan test
+```
+
+### Ver las rutas del panel administrativo
+
+```powershell
+php artisan route:list --path=admin
+```
+
+### Generar los recursos frontend para producción
 
 ```powershell
 npm run build
 ```
 
-## Traducciones de Shield
+---
 
-Si necesitas generar las etiquetas traducibles de permisos en ingles, asegúrate de que exista la carpeta `lang/en`:
+## Reiniciar la base de datos
 
-```powershell
-New-Item lang\en -ItemType Directory -Force
-php artisan shield:translation en --panel=admin
-```
-
-Cuando el comando pregunte dónde guardar el archivo, acepta la ruta propuesta.
-
-## Comandos utiles
-
-```powershell
-# Ver el estado de las migraciones
-php artisan migrate:status
-
-# Ejecutar las pruebas
-php artisan test
-
-# Ver las rutas del panel administrativo
-php artisan route:list --path=admin
-
-# Limpiar caches de Laravel y Filament
-php artisan optimize:clear
-php artisan filament:optimize-clear
-```
-
-Para reiniciar completamente la base de datos de desarrollo y volver a cargar los datos:
+Si necesitas comenzar nuevamente con una base de datos limpia durante el desarrollo:
 
 ```powershell
 php artisan migrate:fresh --seed
@@ -201,48 +372,4 @@ php artisan shield:generate --all
 php artisan shield:super-admin --user=1
 ```
 
-`migrate:fresh` elimina todas las tablas. No lo ejecutes en una base de datos con información importante.
-
-## Estructura principal
-
-```text
-app/Filament/Resources/    Recursos del panel administrativo
-app/Models/                Modelos Eloquent
-app/Policies/              Politicas de autorizacion
-config/filament-shield.php Configuracion de Shield
-database/migrations/       Migraciones de la base de datos
-database/seeders/          Datos iniciales
-resources/                 Archivos frontend y vistas
-routes/                    Rutas de la aplicacion
-```
-
-## Solucion de problemas
-
-### `php` o `composer` no se reconoce
-
-Cierra y vuelve a abrir PowerShell despues de instalar Herd. Comprueba que Herd esté activo y que sus ejecutables estén disponibles en el `PATH` del sistema.
-
-### No aparece Usuarios o Shield en el menú
-
-Ejecuta:
-
-```powershell
-php artisan shield:generate --all
-php artisan shield:super-admin --user=1
-php artisan optimize:clear
-```
-
-Después cierra sesión y vuelve a entrar al panel. El panel debe tener registrado `FilamentShieldPlugin` en `app/Providers/Filament/AdminPanelProvider.php`.
-
-### Error al generar la traducción de Shield
-
-El error `Failed to open stream: No such file or directory` indica que no existe la carpeta de destino. Créala y repite el comando:
-
-```powershell
-New-Item lang\en -ItemType Directory -Force
-php artisan shield:translation en --panel=admin
-```
-
-## Licencia
-
-Este proyecto utiliza Laravel y sus dependencias bajo las licencias correspondientes de cada paquete.
+> **Advertencia:** `migrate:fresh` elimina todas las tablas y todos los datos de la base de datos configurada. Utilízalo únicamente en entornos de desarrollo.
