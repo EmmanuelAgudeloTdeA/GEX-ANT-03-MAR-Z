@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -14,26 +13,20 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->createSuperAdmin();
-    }
+        $user = User::find(1);
 
-     private function createSuperAdmin(): void
-    {
-        $superAdminUser = User::find(1);
-
-        $superAdminUserData = [
-            'name' => 'Administrador',
-            'email' => 'admin@admin.com',
-            'password' => Hash::make(config('app.super_admin_password')),
+        $userData = [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => Hash::make('password'),
         ];
 
-        if ($superAdminUser) {
-            $superAdminUser->update($superAdminUserData);
+        if ($user) {
+            $user->update($userData);
         } else {
-            $superAdminUser = User::factory()
-                ->create($superAdminUserData);
+            $user = User::factory()->create($userData);
         }
 
-        $superAdminUser->assignRole('super_admin');
+        $user->syncRoles(['super_admin']);
     }
 }
