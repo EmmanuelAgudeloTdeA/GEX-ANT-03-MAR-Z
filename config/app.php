@@ -131,8 +131,8 @@ return [
     | This value is used to set the password for the super admin user during
     | database seeding. It should be a secure password and can be set in the
     | .env file. If not set, a default password will be used.
-    |   
-    */  
+    |
+    */
 
     'super_admin_password' => env('SUPER_ADMIN_PASSWORD', 'default_secure_password'),
 
