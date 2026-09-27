@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             ShieldSeeder::class,
+            MarzRoleSeeder::class,
             UserSeeder::class,
         ]);
     }
