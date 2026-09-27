@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\SupportRequests\Tables;
 
-use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -12,24 +12,43 @@ class SupportRequestsTable
     {
         return $table
             ->columns([
-                TextColumn::make('title')
-                    ->label('Título')
+                TextColumn::make('id')
+                    ->label('ID')
+                    ->formatStateUsing(fn (int $state): string => "#{$state}")
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('category')
+
+                TextColumn::make('title')
+                    ->label('Título')
+                    ->limit(60)
+                    ->tooltip(fn (TextColumn $column): ?string => strlen((string) $column->getState()) > 60 ? $column->getState() : null)
+                    ->searchable(),
+
+                TextColumn::make('category.name')
                     ->label('Categoría')
+                    ->badge()
+                    ->color('gray')
                     ->sortable(),
+
                 TextColumn::make('status')
-                    ->label('Estado'),
+                    ->label('Estado')
+                    ->badge()
+                    ->sortable(),
+
                 TextColumn::make('created_at')
-                    ->label('Fecha de creación')
+                    ->label('Creada')
                     ->dateTime()
                     ->sortable(),
-                TextColumn::make('user.name')
-                    ->label('Propietario'),
+
+                TextColumn::make('updated_at')
+                    ->label('Última actualización')
+                    ->since()
+                    ->dateTimeTooltip()
+                    ->sortable(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->recordActions([
-                EditAction::make(),
+                ViewAction::make(),
             ]);
     }
 }

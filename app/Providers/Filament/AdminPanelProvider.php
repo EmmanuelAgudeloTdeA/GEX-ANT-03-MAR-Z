@@ -30,7 +30,15 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->plugins([
-                FilamentShieldPlugin::make(),
+                FilamentShieldPlugin::make()
+                    ->navigationGroup('Configuración general')
+                    ->navigationSort(2),
+            ])
+            // Orden del menu lateral; los grupos sin permisos se ocultan solos.
+            ->navigationGroups([
+                'Soporte',
+                'Administración',
+                'Configuración general',
             ])
             ->colors([
                 'primary' => Color::Amber,

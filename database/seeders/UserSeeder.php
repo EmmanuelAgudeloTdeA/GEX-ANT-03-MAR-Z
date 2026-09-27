@@ -4,29 +4,30 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Un usuario de prueba por rol, sin datos personales reales.
+     * Contraseña de todos: "password".
      */
     public function run(): void
     {
-        $user = User::find(1);
-
-        $userData = [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => Hash::make('password'),
+        $users = [
+            'super_admin' => ['name' => 'Administrador', 'email' => 'test@example.com'],
+            'solicitante' => ['name' => 'Solicitante Demo', 'email' => 'solicitante@example.com'],
+            'agente' => ['name' => 'Agente Demo', 'email' => 'agente@example.com'],
+            'coordinador' => ['name' => 'Coordinador Demo', 'email' => 'coordinador@example.com'],
+            'auditor' => ['name' => 'Auditor Demo', 'email' => 'auditor@example.com'],
         ];
 
-        if ($user) {
-            $user->update($userData);
-        } else {
-            $user = User::factory()->create($userData);
-        }
+        foreach ($users as $role => $data) {
+            $user = User::updateOrCreate(
+                ['email' => $data['email']],
+                ['name' => $data['name'], 'password' => 'password', 'is_active' => true],
+            );
 
-        $user->syncRoles(['super_admin']);
+            $user->syncRoles([$role]);
+        }
     }
 }

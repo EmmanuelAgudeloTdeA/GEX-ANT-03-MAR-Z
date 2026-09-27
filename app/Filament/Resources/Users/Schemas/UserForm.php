@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Users\Schemas;
 
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -40,18 +41,31 @@ class UserForm
                     ])
                     ->columns(2),
 
-                Section::make('Permisos de acceso')
+                Section::make('Acceso')
                     ->schema([
-                        // Igual que la contraseña: obligatorio al crear, pero al
-                        // editar se puede dejar vacío para quitar todos los roles.
+                        // Un solo rol de negocio por usuario (PD-18): simplifica
+                        // las Policies y la separacion de funciones.
                         Select::make('roles')
-                            ->label('Roles')
+                            ->label('Rol')
                             ->relationship('roles', 'name')
-                            ->multiple()
                             ->preload()
-                            ->required(fn (string $operation): bool => $operation === 'create')
-                            ->helperText('Obligatorio al crear. Al editar puedes dejarlo vacío para quitarle todos los roles.'),
-                    ]),
+                            ->required(),
+
+                        // Un usuario inactivo no entra al panel. Se desactiva en
+                        // lugar de borrarlo para conservar la auditoria.
+                        Toggle::make('is_active')
+                            ->label('Activo')
+                            ->default(true)
+                            ->inline(false),
+
+                        TextInput::make('code')
+                            ->label('Código')
+                            ->helperText('Se muestra en la auditoría en lugar del nombre.')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->hiddenOn('create'),
+                    ])
+                    ->columns(3),
             ]);
     }
 }

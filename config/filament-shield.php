@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+use App\Filament\Resources\Categories\CategoryResource;
+use App\Filament\Resources\SupportRequests\SupportRequestResource;
 use BezhanSalleh\FilamentShield\Resources\Roles\RoleResource;
 use Filament\Pages\Dashboard;
 use Filament\Widgets\AccountWidget;
@@ -87,7 +89,7 @@ return [
     */
 
     'panel_user' => [
-        'enabled' => true,
+        'enabled' => false,
         'name' => 'panel_user',
     ],
 
@@ -192,6 +194,20 @@ return [
                 'create',
                 'update',
                 'delete',
+            ],
+            // Las solicitudes no se editan ni se borran (PD-07); las acciones de
+            // negocio (priorizar, asignar...) se agregan aqui en cada HU.
+            SupportRequestResource::class => [
+                'viewAny',
+                'view',
+                'create',
+            ],
+            // Las categorias se desactivan, no se borran.
+            CategoryResource::class => [
+                'viewAny',
+                'view',
+                'create',
+                'update',
             ],
         ],
         'exclude' => [
