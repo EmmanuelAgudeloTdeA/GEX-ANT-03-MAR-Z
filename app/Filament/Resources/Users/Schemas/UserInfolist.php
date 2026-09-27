@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class UserInfolist
@@ -10,7 +12,32 @@ class UserInfolist
     {
         return $schema
             ->components([
-                //
+                Section::make('Información del usuario')
+                    ->schema([
+                        TextEntry::make('name')
+                            ->label('Nombre'),
+
+                        TextEntry::make('email')
+                            ->label('Correo')
+                            ->copyable(),
+
+                        TextEntry::make('created_at')
+                            ->label('Creado')
+                            ->dateTime(),
+
+                        TextEntry::make('updated_at')
+                            ->label('Actualizado')
+                            ->dateTime(),
+                    ])
+                    ->columns(2),
+
+                Section::make('Roles asignados')
+                    ->schema([
+                        TextEntry::make('roles.name')
+                            ->label('Roles')
+                            ->badge()
+                            ->placeholder('Sin roles asignados'),
+                    ]),
             ]);
     }
 }
