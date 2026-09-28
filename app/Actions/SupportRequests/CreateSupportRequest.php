@@ -39,13 +39,13 @@ class CreateSupportRequest
             ]);
 
             $request->requester_id = $user->getKey();
-            $request->status = RequestStatus::Nuevo;
+            $request->status = RequestStatus::New;
             $request->save();
 
             $this->audit->record(
                 $request,
                 AuditEvent::Created,
-                ['status' => [null, RequestStatus::Nuevo]],
+                ['status' => [null, RequestStatus::New]],
                 actor: $user,
             );
 

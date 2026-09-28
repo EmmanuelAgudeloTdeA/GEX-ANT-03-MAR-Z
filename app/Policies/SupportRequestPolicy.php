@@ -30,7 +30,7 @@ class SupportRequestPolicy
     public function prioritize(User $user, SupportRequest $supportRequest): bool
     {
         return $user->can('Prioritize:SupportRequest')
-            && $supportRequest->status !== RequestStatus::Cerrada;
+            && $supportRequest->status !== RequestStatus::Closed;
     }
 
     // Las solicitudes no se editan ni se borran (PD-07): los cambios se hacen

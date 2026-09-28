@@ -141,20 +141,20 @@ class Hu03ViewOwnSupportRequestsTest extends TestCase
         $category = Category::factory()->create();
         $match = SupportRequest::factory()->create([
             'category_id' => $category->id,
-            'status' => RequestStatus::Nuevo,
-            'priority' => RequestPriority::Alta,
+            'status' => RequestStatus::New,
+            'priority' => RequestPriority::High,
         ]);
         $otherPriority = SupportRequest::factory()->create([
             'category_id' => $category->id,
-            'priority' => RequestPriority::Baja,
+            'priority' => RequestPriority::Low,
         ]);
-        $otherCategory = SupportRequest::factory()->create(['priority' => RequestPriority::Alta]);
+        $otherCategory = SupportRequest::factory()->create(['priority' => RequestPriority::High]);
 
         $this->actingAs($this->userWithRole('coordinador'));
 
         Livewire::test(ListSupportRequests::class)
-            ->filterTable('status', [RequestStatus::Nuevo->value])
-            ->filterTable('priority', [RequestPriority::Alta->value])
+            ->filterTable('status', [RequestStatus::New->value])
+            ->filterTable('priority', [RequestPriority::High->value])
             ->filterTable('category_id', [$category->id])
             ->assertCanSeeTableRecords([$match])
             ->assertCanNotSeeTableRecords([$otherPriority, $otherCategory]);

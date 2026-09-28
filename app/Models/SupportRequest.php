@@ -28,7 +28,7 @@ class SupportRequest extends Model
     ];
 
     protected $attributes = [
-        'status' => 'nuevo',
+        'status' => 'new',
     ];
 
     protected function casts(): array

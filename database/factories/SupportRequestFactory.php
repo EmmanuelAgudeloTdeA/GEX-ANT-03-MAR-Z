@@ -20,7 +20,7 @@ class SupportRequestFactory extends Factory
             'description' => fake()->paragraph(),
             'category_id' => Category::factory(),
             'requester_id' => User::factory(),
-            'status' => RequestStatus::Nuevo,
+            'status' => RequestStatus::New,
         ];
     }
 }

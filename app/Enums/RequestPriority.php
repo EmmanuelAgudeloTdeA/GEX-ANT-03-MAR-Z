@@ -13,21 +13,25 @@ use Filament\Support\Contracts\HasLabel;
  */
 enum RequestPriority: int implements HasColor, HasLabel
 {
-    case Baja = 1;
-    case Media = 2;
-    case Alta = 3;
+    case Low = 1;
+    case Medium = 2;
+    case High = 3;
 
     public function getLabel(): string
     {
-        return $this->name;
+        return match ($this) {
+            self::Low => 'Baja',
+            self::Medium => 'Media',
+            self::High => 'Alta',
+        };
     }
 
     public function getColor(): string
     {
         return match ($this) {
-            self::Baja => 'gray',
-            self::Media => 'warning',
-            self::Alta => 'danger',
+            self::Low => 'gray',
+            self::Medium => 'warning',
+            self::High => 'danger',
         };
     }
 }

@@ -57,7 +57,7 @@ class Hu02CreateSupportRequestTest extends TestCase
         $this->assertSame('No enciende el equipo', $request->title);
         $this->assertSame($category->id, $request->category_id);
         $this->assertSame($this->requester->id, $request->requester_id);
-        $this->assertSame(RequestStatus::Nuevo, $request->status);
+        $this->assertSame(RequestStatus::New, $request->status);
         $this->assertNotNull($request->id);
         $this->assertNotNull($request->created_at);
 
@@ -67,7 +67,7 @@ class Hu02CreateSupportRequestTest extends TestCase
         $this->assertSame($this->requester->id, $log->actor_id);
         $this->assertSame('solicitante', $log->actor_role);
         $this->assertSame('status', $log->field);
-        $this->assertSame('nuevo', $log->new_value);
+        $this->assertSame('new', $log->new_value);
     }
 
     public function test_title_description_and_category_are_required(): void
@@ -108,11 +108,11 @@ class Hu02CreateSupportRequestTest extends TestCase
             'title' => 'Titulo',
             'description' => 'Descripcion',
             'category_id' => $category->id,
-            'status' => 'cerrada',
+            'status' => 'closed',
             'requester_id' => $otherUser->id,
         ]);
 
-        $this->assertSame(RequestStatus::Nuevo, $request->status);
+        $this->assertSame(RequestStatus::New, $request->status);
         $this->assertSame($this->requester->id, $request->requester_id);
     }
 
@@ -183,7 +183,7 @@ class Hu02CreateSupportRequestTest extends TestCase
         $log = $request->auditLogs()->sole();
 
         try {
-            $log->update(['new_value' => 'cerrada']);
+            $log->update(['new_value' => 'closed']);
             $this->fail('Se permitio modificar un registro de auditoria.');
         } catch (LogicException) {
         }

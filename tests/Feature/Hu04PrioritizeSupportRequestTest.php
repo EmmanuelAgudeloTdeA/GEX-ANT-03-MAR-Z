@@ -56,10 +56,10 @@ class Hu04PrioritizeSupportRequestTest extends TestCase
         $this->actingAs($this->coordinator);
 
         Livewire::test(ViewSupportRequest::class, ['record' => $request->getRouteKey()])
-            ->callAction('prioritize', data: ['priority' => RequestPriority::Alta->value])
+            ->callAction('prioritize', data: ['priority' => RequestPriority::High->value])
             ->assertHasNoActionErrors();
 
-        $this->assertSame(RequestPriority::Alta, $request->fresh()->priority);
+        $this->assertSame(RequestPriority::High, $request->fresh()->priority);
 
         $log = AuditLog::sole();
         $this->assertSame(AuditEvent::PriorityChanged, $log->event);
@@ -73,15 +73,15 @@ class Hu04PrioritizeSupportRequestTest extends TestCase
 
     public function test_coordinator_prioritizes_from_the_table_row(): void
     {
-        $request = SupportRequest::factory()->create(['priority' => RequestPriority::Baja]);
+        $request = SupportRequest::factory()->create(['priority' => RequestPriority::Low]);
 
         $this->actingAs($this->coordinator);
 
         Livewire::test(ListSupportRequests::class)
-            ->callTableAction('prioritize', $request, data: ['priority' => RequestPriority::Media->value])
+            ->callTableAction('prioritize', $request, data: ['priority' => RequestPriority::Medium->value])
             ->assertHasNoTableActionErrors();
 
-        $this->assertSame(RequestPriority::Media, $request->fresh()->priority);
+        $this->assertSame(RequestPriority::Medium, $request->fresh()->priority);
         $this->assertSame(['1', '2'], [AuditLog::sole()->old_value, AuditLog::sole()->new_value]);
     }
 
@@ -105,9 +105,9 @@ class Hu04PrioritizeSupportRequestTest extends TestCase
 
     public function test_same_priority_is_not_audited(): void
     {
-        $request = SupportRequest::factory()->create(['priority' => RequestPriority::Media]);
+        $request = SupportRequest::factory()->create(['priority' => RequestPriority::Medium]);
 
-        app(PrioritizeSupportRequest::class)->handle($this->coordinator, $request, RequestPriority::Media);
+        app(PrioritizeSupportRequest::class)->handle($this->coordinator, $request, RequestPriority::Medium);
 
         $this->assertDatabaseCount('audit_logs', 0);
     }
@@ -122,7 +122,7 @@ class Hu04PrioritizeSupportRequestTest extends TestCase
             $this->assertFalse($user->can('prioritize', $request), $role);
 
             try {
-                app(PrioritizeSupportRequest::class)->handle($user, $request, RequestPriority::Alta);
+                app(PrioritizeSupportRequest::class)->handle($user, $request, RequestPriority::High);
                 $this->fail("El rol {$role} pudo priorizar.");
             } catch (AuthorizationException) {
             }
@@ -145,29 +145,29 @@ class Hu04PrioritizeSupportRequestTest extends TestCase
 
     public function test_closed_requests_cannot_be_prioritized(): void
     {
-        $request = SupportRequest::factory()->create(['status' => RequestStatus::Cerrada]);
+        $request = SupportRequest::factory()->create(['status' => RequestStatus::Closed]);
 
         $this->assertFalse($this->coordinator->can('prioritize', $request));
 
         $this->expectException(AuthorizationException::class);
-        app(PrioritizeSupportRequest::class)->handle($this->coordinator, $request, RequestPriority::Alta);
+        app(PrioritizeSupportRequest::class)->handle($this->coordinator, $request, RequestPriority::High);
     }
 
     public function test_list_sorts_by_priority_status_and_date(): void
     {
         $low = SupportRequest::factory()->create([
-            'priority' => RequestPriority::Baja,
-            'status' => RequestStatus::Cerrada,
+            'priority' => RequestPriority::Low,
+            'status' => RequestStatus::Closed,
             'created_at' => now()->subDays(2),
         ]);
         $high = SupportRequest::factory()->create([
-            'priority' => RequestPriority::Alta,
-            'status' => RequestStatus::Nuevo,
+            'priority' => RequestPriority::High,
+            'status' => RequestStatus::New,
             'created_at' => now()->subDay(),
         ]);
         $medium = SupportRequest::factory()->create([
-            'priority' => RequestPriority::Media,
-            'status' => RequestStatus::EnProgreso,
+            'priority' => RequestPriority::Medium,
+            'status' => RequestStatus::InProgress,
             'created_at' => now(),
         ]);
 

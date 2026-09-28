@@ -13,34 +13,44 @@ use Filament\Support\Contracts\HasLabel;
  */
 enum RequestStatus: string implements HasColor, HasLabel
 {
-    case Nuevo = 'nuevo';
-    case Asignada = 'asignada';
-    case EnProgreso = 'en_progreso';
-    case Resuelta = 'resuelta';
-    case Reabierta = 'reabierta';
-    case Cerrada = 'cerrada';
+    case New = 'new';
+    case Assigned = 'assigned';
+    case InProgress = 'in_progress';
+    case Resolved = 'resolved';
+    case Reopened = 'reopened';
+    case Closed = 'closed';
+
+    /**
+     * Estados en los que la solicitud sigue en atencion (ni resuelta ni cerrada).
+     *
+     * @return array<self>
+     */
+    public static function open(): array
+    {
+        return [self::New, self::Assigned, self::InProgress, self::Reopened];
+    }
 
     public function getLabel(): string
     {
         return match ($this) {
-            self::Nuevo => 'Nuevo',
-            self::Asignada => 'Asignada',
-            self::EnProgreso => 'En progreso',
-            self::Resuelta => 'Resuelta',
-            self::Reabierta => 'Reabierta',
-            self::Cerrada => 'Cerrada',
+            self::New => 'Nuevo',
+            self::Assigned => 'Asignada',
+            self::InProgress => 'En progreso',
+            self::Resolved => 'Resuelta',
+            self::Reopened => 'Reabierta',
+            self::Closed => 'Cerrada',
         };
     }
 
     public function getColor(): string
     {
         return match ($this) {
-            self::Nuevo => 'gray',
-            self::Asignada => 'info',
-            self::EnProgreso => 'warning',
-            self::Resuelta => 'success',
-            self::Reabierta => 'danger',
-            self::Cerrada => 'success',
+            self::New => 'gray',
+            self::Assigned => 'info',
+            self::InProgress => 'warning',
+            self::Resolved => 'success',
+            self::Reopened => 'danger',
+            self::Closed => 'success',
         };
     }
 }
