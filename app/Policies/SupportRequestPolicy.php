@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\RequestStatus;
 use App\Models\SupportRequest;
 use App\Models\User;
 
@@ -16,15 +17,20 @@ class SupportRequestPolicy
         return $user->can('ViewAny:SupportRequest');
     }
 
-    // TODO HU03: agregar la condicion de registro (propietario / agente asignado).
     public function view(User $user, SupportRequest $supportRequest): bool
     {
-        return $user->can('View:SupportRequest');
+        return $user->can('View:SupportRequest') && $supportRequest->isVisibleTo($user);
     }
 
     public function create(User $user): bool
     {
         return $user->can('Create:SupportRequest');
+    }
+
+    public function prioritize(User $user, SupportRequest $supportRequest): bool
+    {
+        return $user->can('Prioritize:SupportRequest')
+            && $supportRequest->status !== RequestStatus::Cerrada;
     }
 
     // Las solicitudes no se editan ni se borran (PD-07): los cambios se hacen

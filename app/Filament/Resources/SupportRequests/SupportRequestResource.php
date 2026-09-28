@@ -55,10 +55,19 @@ class SupportRequestResource extends Resource
         return SupportRequestsTable::configure($table);
     }
 
-    // TODO HU03: aplicar el scope visibleTo(auth()->user()) para que cada rol vea solo lo suyo.
+    // La restriccion por rol vive en la query base, no en un filtro que el
+    // usuario pueda quitar (HU03, Tech Plan §25).
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with('category');
+        $user = auth()->user();
+
+        return parent::getEloquentQuery()
+            ->with(['category', 'requester'])
+            ->when(
+                $user,
+                fn (Builder $query) => $query->visibleTo($user),
+                fn (Builder $query) => $query->whereRaw('1 = 0'),
+            );
     }
 
     // Sin pagina de edicion (PD-07): los cambios se hacen con acciones trazables.

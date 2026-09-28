@@ -28,6 +28,7 @@ class RolePermissionSeeder extends Seeder
         'coordinador' => [
             'ViewAny:SupportRequest',
             'View:SupportRequest',
+            'Prioritize:SupportRequest',
         ],
         'auditor' => [],
     ];

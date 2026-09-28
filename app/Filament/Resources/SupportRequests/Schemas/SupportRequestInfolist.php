@@ -23,6 +23,11 @@ class SupportRequestInfolist
                             ->label('Estado')
                             ->badge(),
 
+                        TextEntry::make('priority')
+                            ->label('Prioridad')
+                            ->badge()
+                            ->placeholder('Sin priorizar'),
+
                         TextEntry::make('title')
                             ->label('Título')
                             ->columnSpanFull(),
@@ -41,6 +46,9 @@ class SupportRequestInfolist
 
                 Section::make('Seguimiento')
                     ->schema([
+                        TextEntry::make('requester.name')
+                            ->label('Solicitante'),
+
                         TextEntry::make('created_at')
                             ->label('Creada')
                             ->dateTime(),

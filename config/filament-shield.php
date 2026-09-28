@@ -201,6 +201,7 @@ return [
                 'viewAny',
                 'view',
                 'create',
+                'prioritize',
             ],
             // Las categorias se desactivan, no se borran.
             CategoryResource::class => [

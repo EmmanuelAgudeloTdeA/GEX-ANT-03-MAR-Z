@@ -19,15 +19,19 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained()->restrictOnDelete();
             $table->foreignId('requester_id')->constrained('users')->restrictOnDelete();
             $table->string('status', 20)->default('nuevo')->index();
+            // 1 baja, 2 media, 3 alta; null = sin priorizar (HU04).
+            $table->unsignedTinyInteger('priority')->nullable()->index();
             $table->timestamps();
 
             $table->index('created_at');
+            $table->index(['status', 'priority']);
         });
 
         // SQLite no permite agregar CHECK con ALTER TABLE; en MySQL/PostgreSQL
-        // la regla de estados tambien queda protegida en la base de datos.
+        // las reglas de estado y prioridad tambien quedan protegidas en la base de datos.
         if (in_array(DB::getDriverName(), ['mysql', 'pgsql'], true)) {
             DB::statement("ALTER TABLE support_requests ADD CONSTRAINT support_requests_status_check CHECK (status IN ('nuevo','asignada','en_progreso','resuelta','reabierta','cerrada'))");
+            DB::statement('ALTER TABLE support_requests ADD CONSTRAINT support_requests_priority_check CHECK (priority IS NULL OR priority BETWEEN 1 AND 3)');
         }
     }
 

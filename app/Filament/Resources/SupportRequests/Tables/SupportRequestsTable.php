@@ -2,9 +2,15 @@
 
 namespace App\Filament\Resources\SupportRequests\Tables;
 
+use App\Enums\RequestPriority;
+use App\Enums\RequestStatus;
+use App\Filament\Actions\PrioritizeAction;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class SupportRequestsTable
 {
@@ -30,9 +36,18 @@ class SupportRequestsTable
                     ->color('gray')
                     ->sortable(),
 
+                // Se ordena por la posicion en el flujo (Nuevo -> Cerrada), no alfabeticamente.
                 TextColumn::make('status')
                     ->label('Estado')
                     ->badge()
+                    ->sortable(query: fn (Builder $query, string $direction): Builder => $query->orderByRaw(
+                        self::statusFlowOrder().' '.($direction === 'desc' ? 'desc' : 'asc')
+                    )),
+
+                TextColumn::make('priority')
+                    ->label('Prioridad')
+                    ->badge()
+                    ->placeholder('Sin priorizar')
                     ->sortable(),
 
                 TextColumn::make('created_at')
@@ -47,8 +62,59 @@ class SupportRequestsTable
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
+            ->filters([
+                SelectFilter::make('status')
+                    ->label('Estado')
+                    ->options(RequestStatus::class)
+                    ->multiple(),
+
+                SelectFilter::make('priority')
+                    ->label('Prioridad')
+                    ->options(['none' => 'Sin priorizar'] + collect(RequestPriority::cases())
+                        ->mapWithKeys(fn (RequestPriority $priority): array => [$priority->value => $priority->getLabel()])
+                        ->all())
+                    ->multiple()
+                    ->query(function (Builder $query, array $data): Builder {
+                        $values = collect($data['values'] ?? []);
+
+                        if ($values->isEmpty()) {
+                            return $query;
+                        }
+
+                        // El OR interno va agrupado para no escapar de visibleTo().
+                        return $query->where(function (Builder $query) use ($values): void {
+                            $priorities = $values->reject(fn ($value): bool => $value === 'none')->map(fn ($value): int => (int) $value);
+
+                            if ($priorities->isNotEmpty()) {
+                                $query->whereIn('priority', $priorities->all());
+                            }
+
+                            if ($values->contains('none')) {
+                                $query->orWhereNull('priority');
+                            }
+                        });
+                    }),
+
+                SelectFilter::make('category_id')
+                    ->label('Categoría')
+                    ->relationship('category', 'name')
+                    ->multiple()
+                    ->preload(),
+            ])
             ->recordActions([
-                ViewAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    PrioritizeAction::make(),
+                ]),
             ]);
+    }
+
+    private static function statusFlowOrder(): string
+    {
+        $cases = collect(RequestStatus::cases())
+            ->map(fn (RequestStatus $status, int $position): string => "WHEN '{$status->value}' THEN {$position}")
+            ->implode(' ');
+
+        return "CASE status {$cases} END";
     }
 }
