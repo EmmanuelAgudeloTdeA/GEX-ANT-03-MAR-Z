@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Models\User;
+use BezhanSalleh\FilamentShield\Facades\FilamentShield;
 use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\ShieldSeeder;
 use Filament\Actions\DeleteAction;
@@ -132,6 +133,23 @@ class Hu01AccessTest extends TestCase
 
         Livewire::test(ListUsers::class)
             ->assertOk();
+    }
+
+    public function test_role_screen_only_offers_permissions_that_policies_honor(): void
+    {
+        $offered = array_keys(FilamentShield::getAllResourcePermissionsWithLabels());
+
+        foreach (['SupportRequest', 'Category', 'User'] as $model) {
+            foreach (['Update', 'Delete', 'DeleteAny', 'Restore', 'ForceDelete'] as $method) {
+                if ($method === 'Update' && $model !== 'SupportRequest') {
+                    continue;
+                }
+
+                $this->assertNotContains("{$method}:{$model}", $offered);
+            }
+        }
+
+        $this->assertContains('Prioritize:SupportRequest', $offered);
     }
 
     public function test_super_admin_can_manage_users_and_categories(): void
