@@ -2,8 +2,13 @@
 
 namespace App\Filament\Resources\SupportRequests\Pages;
 
+use App\Actions\SupportRequests\CreateSupportRequest as CreateSupportRequestAction;
 use App\Filament\Resources\SupportRequests\SupportRequestResource;
+use DomainException;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Support\Exceptions\Halt;
+use Illuminate\Database\Eloquent\Model;
 
 class CreateSupportRequest extends CreateRecord
 {
@@ -11,12 +16,31 @@ class CreateSupportRequest extends CreateRecord
 
     protected static bool $canCreateAnother = false;
 
-    protected function mutateFormDataBeforeCreate(array $data): array
+    /**
+     * La pagina solo recoge datos; el servicio fija propietario, estado y
+     * escribe la auditoria en la misma transaccion.
+     */
+    protected function handleRecordCreation(array $data): Model
     {
-        $data['user_id'] = auth()->id();
-        $data['status'] = 'Nuevo';
-        $data['priority'] = 'Media';
+        try {
+            return app(CreateSupportRequestAction::class)->handle(auth()->user(), $data);
+        } catch (DomainException $exception) {
+            Notification::make()
+                ->title($exception->getMessage())
+                ->danger()
+                ->send();
 
-        return $data;
+            throw new Halt;
+        }
+    }
+
+    protected function getCreatedNotificationTitle(): ?string
+    {
+        return 'Solicitud creada';
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return static::getResource()::getUrl('view', ['record' => $this->getRecord()]);
     }
 }

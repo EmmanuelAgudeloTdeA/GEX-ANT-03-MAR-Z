@@ -158,27 +158,21 @@ Después, ejecuta los seeders para crear los datos iniciales:
 php artisan db:seed
 ```
 
-El seeder crea un usuario de prueba que podrás utilizar para acceder al panel administrativo.
+Los seeders crean los roles (`super_admin`, `solicitante`, `agente`, `coordinador`, `auditor`) con sus permisos, el catálogo inicial de categorías y un usuario de prueba por rol (ver [Credenciales de prueba](#credenciales-de-prueba)).
+
+> Si ya tenías la base de datos creada antes de los ajustes de HU01/HU02, el esquema cambió: ejecuta `php artisan migrate:fresh --seed`.
 
 ---
 
 ## 8. Configurar Filament Shield
 
-El proyecto utiliza **Filament Shield** para la gestión de roles y permisos.
+El proyecto utiliza **Filament Shield** para la gestión de roles y permisos. Los permisos de cada rol ya se crean con los seeders (`RolePermissionSeeder` y `ShieldSeeder`), así que no hace falta ningún paso adicional.
 
-Genera los permisos y policies del proyecto:
-
-```powershell
-php artisan shield:generate --all
-```
-
-Después, asigna el rol de superadministrador al usuario de prueba:
+Si agregas un Resource nuevo y necesitas generar su policy y sus permisos, usa **siempre** `--ignore-existing-policies`. Sin esa opción, Shield sobrescribe las policies existentes y se pierden las reglas escritas a mano (por ejemplo, que las solicitudes no se pueden editar):
 
 ```powershell
-php artisan shield:super-admin --user=1
+php artisan shield:generate --all --ignore-existing-policies
 ```
-
-> El comando anterior utiliza el usuario con ID `1`, que corresponde al usuario creado por el seeder en la configuración inicial del proyecto.
 
 Finalmente, limpia la caché de Laravel:
 
@@ -246,14 +240,17 @@ La aplicación redirigirá automáticamente al inicio de sesión del panel admin
 
 ## Credenciales de prueba
 
-El seeder crea el siguiente usuario:
+El seeder crea un usuario por rol. La contraseña de todos es `password`:
 
-| Campo      | Valor              |
-| ---------- | ------------------ |
-| Correo     | `test@example.com` |
-| Contraseña | `password`         |
+| Rol           | Correo                    |
+| ------------- | ------------------------- |
+| `super_admin` | `test@example.com`        |
+| `solicitante` | `solicitante@example.com` |
+| `agente`      | `agente@example.com`      |
+| `coordinador` | `coordinador@example.com` |
+| `auditor`     | `auditor@example.com`     |
 
-Utiliza estas credenciales para iniciar sesión.
+Un usuario inactivo o sin rol no puede entrar al panel. Los usuarios no se eliminan: se desactivan desde **Administración → Usuarios**.
 
 > **Importante:** Estas credenciales son únicamente para desarrollo local. No deben utilizarse en un entorno de producción.
 
@@ -276,11 +273,7 @@ New-Item database\database.sqlite -ItemType File -Force
 
 npm install
 
-php artisan migrate
-php artisan db:seed
-
-php artisan shield:generate --all
-php artisan shield:super-admin --user=1
+php artisan migrate --seed
 
 php artisan optimize:clear
 
@@ -307,10 +300,13 @@ Contraseña: password
 
 ```text
 app/
+├── Actions/             Servicios de dominio (una clase por operación de negocio)
+├── Enums/               Estados de solicitud y eventos de auditoría
 ├── Filament/
 │   └── Resources/       Recursos del panel administrativo
 ├── Models/              Modelos Eloquent
-└── Policies/            Policies de autorización
+├── Policies/            Policies de autorización
+└── Support/Audit/       AuditLogger: único punto de escritura de la auditoría
 
 config/
 └── filament-shield.php  Configuración de Filament Shield
@@ -368,8 +364,6 @@ Si necesitas comenzar nuevamente con una base de datos limpia durante el desarro
 
 ```powershell
 php artisan migrate:fresh --seed
-php artisan shield:generate --all
-php artisan shield:super-admin --user=1
 ```
 
 > **Advertencia:** `migrate:fresh` elimina todas las tablas y todos los datos de la base de datos configurada. Utilízalo únicamente en entornos de desarrollo.

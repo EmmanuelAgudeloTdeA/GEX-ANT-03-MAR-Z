@@ -3,18 +3,20 @@
 namespace App\Filament\Resources\SupportRequests;
 
 use App\Filament\Resources\SupportRequests\Pages\CreateSupportRequest;
-use App\Filament\Resources\SupportRequests\Pages\EditSupportRequest;
 use App\Filament\Resources\SupportRequests\Pages\ListSupportRequests;
+use App\Filament\Resources\SupportRequests\Pages\ViewSupportRequest;
 use App\Filament\Resources\SupportRequests\Schemas\SupportRequestForm;
+use App\Filament\Resources\SupportRequests\Schemas\SupportRequestInfolist;
 use App\Filament\Resources\SupportRequests\Tables\SupportRequestsTable;
 use App\Models\SupportRequest;
 use BackedEnum;
-use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
+use UnitEnum;
 
 class SupportRequestResource extends Resource
 {
@@ -24,7 +26,19 @@ class SupportRequestResource extends Resource
 
     protected static ?string $pluralModelLabel = 'solicitudes de soporte';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedLifebuoy;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Soporte';
+
+    public static function getTitleCaseModelLabel(): string
+    {
+        return Str::ucfirst(static::getModelLabel());
+    }
+
+    public static function getTitleCasePluralModelLabel(): string
+    {
+        return Str::ucfirst(static::getPluralModelLabel());
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -33,39 +47,7 @@ class SupportRequestResource extends Resource
 
     public static function infolist(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                TextEntry::make('id')
-                    ->label('ID'),
-
-                TextEntry::make('title')
-                    ->label('Título'),
-
-                TextEntry::make('description')
-                    ->label('Descripción'),
-
-                TextEntry::make('category')
-                    ->label('Categoría'),
-
-                TextEntry::make('priority')
-                    ->label('Prioridad')
-                    ->badge(),
-
-                TextEntry::make('status')
-                    ->label('Estado')
-                    ->badge(),
-
-                TextEntry::make('user.name')
-                    ->label('Propietario'),
-
-                TextEntry::make('created_at')
-                    ->label('Fecha de creación')
-                    ->dateTime(),
-
-                TextEntry::make('updated_at')
-                    ->label('Última actualización')
-                    ->dateTime(),
-            ]);
+        return SupportRequestInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -73,29 +55,28 @@ class SupportRequestResource extends Resource
         return SupportRequestsTable::configure($table);
     }
 
+    // La restriccion por rol vive en la query base, no en un filtro que el
+    // usuario pueda quitar (HU03, Tech Plan §25).
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery();
-
         $user = auth()->user();
 
-        if (! $user) {
-            return $query->whereRaw('1 = 0');
-        }
-
-        if ($user->isCoordinator()) {
-            return $query;
-        }
-
-        return $query->where('user_id', $user->id);
+        return parent::getEloquentQuery()
+            ->with(['category', 'requester'])
+            ->when(
+                $user,
+                fn (Builder $query) => $query->visibleTo($user),
+                fn (Builder $query) => $query->whereRaw('1 = 0'),
+            );
     }
 
+    // Sin pagina de edicion (PD-07): los cambios se hacen con acciones trazables.
     public static function getPages(): array
     {
         return [
             'index' => ListSupportRequests::route('/'),
             'create' => CreateSupportRequest::route('/create'),
-            'edit' => EditSupportRequest::route('/{record}/edit'),
+            'view' => ViewSupportRequest::route('/{record}'),
         ];
     }
 }

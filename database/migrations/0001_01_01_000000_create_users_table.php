@@ -18,6 +18,10 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
+            // Codigo publico que se muestra como "actor codificado" en la auditoria (PD-09).
+            // Es nullable porque se genera a partir del id, justo despues de insertar.
+            $table->string('code', 20)->nullable()->unique();
+            $table->boolean('is_active')->default(true)->index();
             $table->timestamps();
         });
 

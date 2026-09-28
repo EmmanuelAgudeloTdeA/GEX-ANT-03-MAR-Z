@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -31,13 +32,21 @@ class UserInfolist
                     ])
                     ->columns(2),
 
-                Section::make('Roles asignados')
+                Section::make('Acceso')
                     ->schema([
                         TextEntry::make('roles.name')
-                            ->label('Roles')
+                            ->label('Rol')
                             ->badge()
-                            ->placeholder('Sin roles asignados'),
-                    ]),
+                            ->placeholder('Sin rol asignado'),
+
+                        IconEntry::make('is_active')
+                            ->label('Activo')
+                            ->boolean(),
+
+                        TextEntry::make('code')
+                            ->label('Código'),
+                    ])
+                    ->columns(3),
             ]);
     }
 }

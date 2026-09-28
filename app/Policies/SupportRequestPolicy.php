@@ -1,90 +1,62 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Policies;
 
+use App\Enums\RequestStatus;
 use App\Models\SupportRequest;
-use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Foundation\Auth\User as AuthUser;
+use App\Models\User;
 
+/**
+ * El permiso Shield dice si el rol tiene la capacidad; la condicion sobre el
+ * registro se agrega aqui (Tech Plan §12.1).
+ */
 class SupportRequestPolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny(AuthUser $authUser): bool
+    public function viewAny(User $user): bool
     {
-        return $authUser->can('ViewAny:SupportRequest');
+        return $user->can('ViewAny:SupportRequest');
     }
 
-    public function view(
-        AuthUser $authUser,
-        SupportRequest $supportRequest
-    ): bool {
-        return $authUser->isCoordinator()
-            || (
-                $supportRequest->user_id === $authUser->id
-                && $authUser->can('View:SupportRequest')
-            );
-    }
-
-    public function create(AuthUser $authUser): bool
+    public function view(User $user, SupportRequest $supportRequest): bool
     {
-        return $authUser->can('Create:SupportRequest');
+        return $user->can('View:SupportRequest') && $supportRequest->isVisibleTo($user);
     }
 
-    public function update(
-        AuthUser $authUser,
-        SupportRequest $supportRequest
-    ): bool {
-        return $authUser->isCoordinator();
-    }
-
-    public function delete(
-        AuthUser $authUser,
-        SupportRequest $supportRequest
-    ): bool {
-        return $authUser->can('Delete:SupportRequest');
-    }
-
-    public function deleteAny(AuthUser $authUser): bool
+    public function create(User $user): bool
     {
-        return $authUser->can('DeleteAny:SupportRequest');
+        return $user->can('Create:SupportRequest');
     }
 
-    public function restore(
-        AuthUser $authUser,
-        SupportRequest $supportRequest
-    ): bool {
-        return $authUser->can('Restore:SupportRequest');
-    }
-
-    public function forceDelete(
-        AuthUser $authUser,
-        SupportRequest $supportRequest
-    ): bool {
-        return $authUser->can('ForceDelete:SupportRequest');
-    }
-
-    public function forceDeleteAny(AuthUser $authUser): bool
+    public function prioritize(User $user, SupportRequest $supportRequest): bool
     {
-        return $authUser->can('ForceDeleteAny:SupportRequest');
+        return $user->can('Prioritize:SupportRequest')
+            && $supportRequest->status !== RequestStatus::Closed;
     }
 
-    public function restoreAny(AuthUser $authUser): bool
+    // Las solicitudes no se editan ni se borran (PD-07): los cambios se hacen
+    // con acciones trazables. Aplica tambien a super_admin.
+    public function update(User $user, SupportRequest $supportRequest): bool
     {
-        return $authUser->can('RestoreAny:SupportRequest');
+        return false;
     }
 
-    public function replicate(
-        AuthUser $authUser,
-        SupportRequest $supportRequest
-    ): bool {
-        return $authUser->can('Replicate:SupportRequest');
-    }
-
-    public function reorder(AuthUser $authUser): bool
+    public function delete(User $user, SupportRequest $supportRequest): bool
     {
-        return $authUser->can('Reorder:SupportRequest');
+        return false;
+    }
+
+    public function deleteAny(User $user): bool
+    {
+        return false;
+    }
+
+    public function restore(User $user, SupportRequest $supportRequest): bool
+    {
+        return false;
+    }
+
+    public function forceDelete(User $user, SupportRequest $supportRequest): bool
+    {
+        return false;
     }
 }

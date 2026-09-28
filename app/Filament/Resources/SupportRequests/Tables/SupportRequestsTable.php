@@ -2,12 +2,15 @@
 
 namespace App\Filament\Resources\SupportRequests\Tables;
 
-use App\Models\SupportRequest;
-use Filament\Actions\EditAction;
+use App\Enums\RequestPriority;
+use App\Enums\RequestStatus;
+use App\Filament\Actions\PrioritizeAction;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class SupportRequestsTable
 {
@@ -15,81 +18,103 @@ class SupportRequestsTable
     {
         return $table
             ->columns([
-                TextColumn::make('title')
-                    ->label('Título')
+                TextColumn::make('id')
+                    ->label('ID')
+                    ->formatStateUsing(fn (int $state): string => "#{$state}")
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('category')
+                TextColumn::make('title')
+                    ->label('Título')
+                    ->limit(60)
+                    ->tooltip(fn (TextColumn $column): ?string => strlen((string) $column->getState()) > 60 ? $column->getState() : null)
+                    ->searchable(),
+
+                TextColumn::make('category.name')
                     ->label('Categoría')
+                    ->badge()
+                    ->color('gray')
                     ->sortable(),
+
+                // Se ordena por la posicion en el flujo (Nuevo -> Cerrada), no alfabeticamente.
+                TextColumn::make('status')
+                    ->label('Estado')
+                    ->badge()
+                    ->sortable(query: fn (Builder $query, string $direction): Builder => $query->orderByRaw(
+                        self::statusFlowOrder().' '.($direction === 'desc' ? 'desc' : 'asc')
+                    )),
 
                 TextColumn::make('priority')
                     ->label('Prioridad')
                     ->badge()
-                    ->sortable(query: function ($query, string $direction): void {
-                        $direction = strtolower($direction) === 'desc'
-                            ? 'desc'
-                            : 'asc';
-
-                        $query->orderByRaw(
-                            "CASE priority
-                                WHEN 'Alta' THEN 1
-                                WHEN 'Media' THEN 2
-                                WHEN 'Baja' THEN 3
-                                ELSE 4
-                            END {$direction}"
-                        );
-                    }),
-
-                TextColumn::make('status')
-                    ->label('Estado')
-                    ->sortable()
-                    ->badge(),
-
-                TextColumn::make('updated_at')
-                    ->label('Última actualización')
-                    ->dateTime()
+                    ->placeholder('Sin priorizar')
                     ->sortable(),
 
                 TextColumn::make('created_at')
-                    ->label('Fecha de creación')
+                    ->label('Creada')
                     ->dateTime()
                     ->sortable(),
 
-                TextColumn::make('user.name')
-                    ->label('Propietario'),
+                TextColumn::make('updated_at')
+                    ->label('Última actualización')
+                    ->since()
+                    ->dateTimeTooltip()
+                    ->sortable(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 SelectFilter::make('status')
                     ->label('Estado')
-                    ->options(fn () => SupportRequest::query()
-                        ->distinct()
-                        ->pluck('status', 'status')
-                        ->toArray()),
+                    ->options(RequestStatus::class)
+                    ->multiple(),
 
                 SelectFilter::make('priority')
                     ->label('Prioridad')
-                    ->options([
-                        'Alta' => 'Alta',
-                        'Media' => 'Media',
-                        'Baja' => 'Baja',
-                    ]),
+                    ->options(['none' => 'Sin priorizar'] + collect(RequestPriority::cases())
+                        ->mapWithKeys(fn (RequestPriority $priority): array => [$priority->value => $priority->getLabel()])
+                        ->all())
+                    ->multiple()
+                    ->query(function (Builder $query, array $data): Builder {
+                        $values = collect($data['values'] ?? []);
 
-                SelectFilter::make('category')
+                        if ($values->isEmpty()) {
+                            return $query;
+                        }
+
+                        // El OR interno va agrupado para no escapar de visibleTo().
+                        return $query->where(function (Builder $query) use ($values): void {
+                            $priorities = $values->reject(fn ($value): bool => $value === 'none')->map(fn ($value): int => (int) $value);
+
+                            if ($priorities->isNotEmpty()) {
+                                $query->whereIn('priority', $priorities->all());
+                            }
+
+                            if ($values->contains('none')) {
+                                $query->orWhereNull('priority');
+                            }
+                        });
+                    }),
+
+                SelectFilter::make('category_id')
                     ->label('Categoría')
-                    ->options(fn () => SupportRequest::query()
-                        ->distinct()
-                        ->pluck('category', 'category')
-                        ->toArray()),
+                    ->relationship('category', 'name')
+                    ->multiple()
+                    ->preload(),
             ])
             ->recordActions([
-                ViewAction::make()
-                    ->label('Ver'),
-
-                EditAction::make()
-                    ->label('Priorizar')
-                    ->visible(fn (): bool => auth()->user()?->isCoordinator() ?? false),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    PrioritizeAction::make(),
+                ]),
             ]);
+    }
+
+    private static function statusFlowOrder(): string
+    {
+        $cases = collect(RequestStatus::cases())
+            ->map(fn (RequestStatus $status, int $position): string => "WHEN '{$status->value}' THEN {$position}")
+            ->implode(' ');
+
+        return "CASE status {$cases} END";
     }
 }
