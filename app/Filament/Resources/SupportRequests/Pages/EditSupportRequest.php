@@ -13,4 +13,9 @@ class EditSupportRequest extends EditRecord
     {
         return [];
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return SupportRequestResource::getUrl('index');
+    }
 }

@@ -1,29 +1,90 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Models\SupportRequest;
-use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Foundation\Auth\User as AuthUser;
 
 class SupportRequestPolicy
 {
-    public function viewAny(User $user): bool
+    use HandlesAuthorization;
+
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->hasRole('Solicitante') || $user->can('ViewAny:SupportRequest');
+        return $authUser->can('ViewAny:SupportRequest');
     }
 
-    public function create(User $user): bool
-    {
-        return $user->hasRole('Solicitante') || $user->can('Create:SupportRequest');
+    public function view(
+        AuthUser $authUser,
+        SupportRequest $supportRequest
+    ): bool {
+        return $authUser->isCoordinator()
+            || (
+                $supportRequest->user_id === $authUser->id
+                && $authUser->can('View:SupportRequest')
+            );
     }
 
-    public function view(User $user, SupportRequest $supportRequest): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->id === $supportRequest->user_id || $user->can('View:SupportRequest');
+        return $authUser->can('Create:SupportRequest');
     }
 
-    public function update(User $user, SupportRequest $supportRequest): bool
+    public function update(
+        AuthUser $authUser,
+        SupportRequest $supportRequest
+    ): bool {
+        return $authUser->isCoordinator();
+    }
+
+    public function delete(
+        AuthUser $authUser,
+        SupportRequest $supportRequest
+    ): bool {
+        return $authUser->can('Delete:SupportRequest');
+    }
+
+    public function deleteAny(AuthUser $authUser): bool
     {
-        return $user->id === $supportRequest->user_id || $user->can('Update:SupportRequest');
+        return $authUser->can('DeleteAny:SupportRequest');
+    }
+
+    public function restore(
+        AuthUser $authUser,
+        SupportRequest $supportRequest
+    ): bool {
+        return $authUser->can('Restore:SupportRequest');
+    }
+
+    public function forceDelete(
+        AuthUser $authUser,
+        SupportRequest $supportRequest
+    ): bool {
+        return $authUser->can('ForceDelete:SupportRequest');
+    }
+
+    public function forceDeleteAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('ForceDeleteAny:SupportRequest');
+    }
+
+    public function restoreAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('RestoreAny:SupportRequest');
+    }
+
+    public function replicate(
+        AuthUser $authUser,
+        SupportRequest $supportRequest
+    ): bool {
+        return $authUser->can('Replicate:SupportRequest');
+    }
+
+    public function reorder(AuthUser $authUser): bool
+    {
+        return $authUser->can('Reorder:SupportRequest');
     }
 }
