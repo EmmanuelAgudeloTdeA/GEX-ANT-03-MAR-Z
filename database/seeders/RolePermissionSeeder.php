@@ -20,6 +20,7 @@ class RolePermissionSeeder extends Seeder
             'ViewAny:SupportRequest',
             'View:SupportRequest',
             'Create:SupportRequest',
+            'View:MyRequestsStats',
         ],
         'agente' => [
             'ViewAny:SupportRequest',
