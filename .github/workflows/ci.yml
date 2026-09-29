@@ -40,19 +40,15 @@ jobs:
         run: vendor/bin/pint --test
 
   tests:
-    name: Tests (PHP ${{ matrix.php }})
+    name: Tests
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        # 8.3 es el minimo del proyecto; 8.4 es la version de desarrollo.
-        php: ['8.3', '8.4']
     steps:
       - uses: actions/checkout@v4
 
+      # composer.lock trae Symfony 8, que exige PHP >= 8.4.1.
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php }}
+          php-version: '8.4'
           extensions: intl, mbstring, pdo_sqlite, sqlite3
           coverage: none
 
@@ -60,7 +56,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.composer/cache/files
-          key: composer-${{ matrix.php }}-${{ hashFiles('composer.lock') }}
+          key: composer-8.4-${{ hashFiles('composer.lock') }}
 
       - name: Instalar dependencias
         run: |
