@@ -10,7 +10,7 @@ Antes de comenzar, asegúrate de tener instaladas las siguientes herramientas:
 
 * Windows 10 u 11.
 * Git.
-* PHP 8.3 o superior.
+* PHP 8.4.1 o superior (las dependencias de Symfony 8 lo exigen).
 * Composer 2.
 * Node.js 20.19 o superior, o Node.js 22.12 o superior.
 * npm.
@@ -190,7 +190,7 @@ Una vez instalado y configurado el proyecto, puedes registrarlo en Laravel Herd.
 
 Inicia **Laravel Herd** y verifica que esté utilizando una versión de PHP compatible con el proyecto:
 
-**PHP 8.3 o superior.**
+**PHP 8.4.1 o superior.**
 
 ## 2. Registrar el proyecto
 
