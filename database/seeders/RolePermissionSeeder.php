@@ -12,24 +12,30 @@ class RolePermissionSeeder extends Seeder
     /**
      * Roles funcionales del caso MAR-Z y sus permisos Shield (Tech Plan §11.3).
      *
-     * Solo incluye los permisos de las HU ya implementadas; cada HU nueva
-     * agrega aqui los suyos (Prioritize, Assign, ...).
+     * Incluye los permisos de las HU hasta el Sprint 2. Los de HU06-HU08 se
+     * registran desde ya, pero su metodo de Policy niega hasta que se implemente.
      */
     private const ROLE_PERMISSIONS = [
         'solicitante' => [
             'ViewAny:SupportRequest',
             'View:SupportRequest',
             'Create:SupportRequest',
+            'Confirm:SupportRequest',
+            'Reopen:SupportRequest',
             'View:MyRequestsStats',
         ],
         'agente' => [
             'ViewAny:SupportRequest',
             'View:SupportRequest',
+            'ChangeStatus:SupportRequest',
+            'Comment:SupportRequest',
         ],
         'coordinador' => [
             'ViewAny:SupportRequest',
             'View:SupportRequest',
             'Prioritize:SupportRequest',
+            'Assign:SupportRequest',
+            'Comment:SupportRequest',
         ],
         'auditor' => [],
     ];

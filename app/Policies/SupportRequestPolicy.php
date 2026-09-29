@@ -33,6 +33,39 @@ class SupportRequestPolicy
             && $supportRequest->status !== RequestStatus::Closed;
     }
 
+    // TODO HU05: permiso Assign:SupportRequest + estado desde el que la matriz
+    // permite pasar a Asignada.
+    public function assign(User $user, SupportRequest $supportRequest): bool
+    {
+        return false;
+    }
+
+    // TODO HU07: permiso ChangeStatus:SupportRequest + es el agente asignado +
+    // existe al menos un destino en allowedTargetsFor() distinto de Asignada.
+    public function changeStatus(User $user, SupportRequest $supportRequest): bool
+    {
+        return false;
+    }
+
+    // TODO HU06: permiso Comment:SupportRequest + agente asignado o
+    // coordinador (PD-06) + estado distinto de Cerrada.
+    public function comment(User $user, SupportRequest $supportRequest): bool
+    {
+        return false;
+    }
+
+    // TODO HU08: permiso Confirm:SupportRequest + propietario + estado Resuelta.
+    public function confirm(User $user, SupportRequest $supportRequest): bool
+    {
+        return false;
+    }
+
+    // TODO HU08: permiso Reopen:SupportRequest + propietario + estado Resuelta.
+    public function reopen(User $user, SupportRequest $supportRequest): bool
+    {
+        return false;
+    }
+
     // Las solicitudes no se editan ni se borran (PD-07): los cambios se hacen
     // con acciones trazables. Aplica tambien a super_admin.
     public function update(User $user, SupportRequest $supportRequest): bool

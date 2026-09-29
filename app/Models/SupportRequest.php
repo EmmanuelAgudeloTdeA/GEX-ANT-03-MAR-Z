@@ -18,8 +18,9 @@ class SupportRequest extends Model
     use HasFactory;
 
     /**
-     * status, priority y requester_id quedan fuera a proposito: solo los fijan
-     * los servicios de dominio (app/Actions/SupportRequests), nunca el formulario.
+     * status, priority, requester_id, assigned_* y las fechas de resolucion y
+     * cierre quedan fuera a proposito: solo los fijan los servicios de dominio
+     * (app/Actions/SupportRequests), nunca el formulario.
      */
     protected $fillable = [
         'title',
@@ -36,6 +37,13 @@ class SupportRequest extends Model
         return [
             'status' => RequestStatus::class,
             'priority' => RequestPriority::class,
+            // Enteros para comparar con === contra el id del usuario en cualquier motor.
+            'requester_id' => 'integer',
+            'assigned_agent_id' => 'integer',
+            'assigned_by_id' => 'integer',
+            'assigned_at' => 'datetime',
+            'resolved_at' => 'datetime',
+            'closed_at' => 'datetime',
         ];
     }
 
@@ -47,6 +55,21 @@ class SupportRequest extends Model
     public function requester(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requester_id');
+    }
+
+    public function assignedAgent(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_agent_id');
+    }
+
+    public function assignedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_by_id');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(RequestComment::class);
     }
 
     public function auditLogs(): HasMany
@@ -71,7 +94,13 @@ class SupportRequest extends Model
             return;
         }
 
-        // TODO HU05: el agente vera las solicitudes con assigned_agent_id = su id.
+        // El agente solo ve lo que tiene asignado (PD-05).
+        if ($user->hasRole('agente')) {
+            $query->where('assigned_agent_id', $user->getKey());
+
+            return;
+        }
+
         $query->whereRaw('1 = 0');
     }
 

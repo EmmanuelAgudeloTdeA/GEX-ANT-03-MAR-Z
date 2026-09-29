@@ -9,6 +9,11 @@
 
 return [
     'prioritize' => 'Priorizar',
+    'assign' => 'Asignar',
+    'change_status' => 'Cambiar estado',
+    'comment' => 'Comentar',
+    'confirm' => 'Confirmar solución',
+    'reopen' => 'Reabrir',
 
     'view_my_requests_stats' => 'Ver el resumen de mis solicitudes',
 ];

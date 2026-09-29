@@ -28,6 +28,9 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            // Campana de notificaciones en la aplicacion (HU05), sin websockets.
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
             ->plugins([
                 FilamentShieldPlugin::make()
                     ->navigationGroup('Configuración general')
