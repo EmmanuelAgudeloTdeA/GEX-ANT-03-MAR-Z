@@ -205,6 +205,11 @@ return [
                 'view',
                 'create',
                 'prioritize',
+                'assign',
+                'changeStatus',
+                'comment',
+                'confirm',
+                'reopen',
             ],
             // Las categorias se desactivan, no se borran.
             CategoryResource::class => [

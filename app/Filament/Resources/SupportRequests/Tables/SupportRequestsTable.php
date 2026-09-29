@@ -4,6 +4,7 @@ namespace App\Filament\Resources\SupportRequests\Tables;
 
 use App\Enums\RequestPriority;
 use App\Enums\RequestStatus;
+use App\Filament\Actions\AssignAction;
 use App\Filament\Actions\PrioritizeAction;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\ViewAction;
@@ -49,6 +50,12 @@ class SupportRequestsTable
                     ->badge()
                     ->placeholder('Sin priorizar')
                     ->sortable(),
+
+                // No es ordenable a proposito: ordenar por persona es el primer paso hacia un ranking (BR-17).
+                TextColumn::make('assignedAgent.name')
+                    ->label('Agente asignado')
+                    ->placeholder('Sin asignar')
+                    ->visible(fn (): bool => auth()->user()?->can('Assign:SupportRequest') ?? false),
 
                 TextColumn::make('created_at')
                     ->label('Creada')
@@ -105,6 +112,7 @@ class SupportRequestsTable
                 ActionGroup::make([
                     ViewAction::make(),
                     PrioritizeAction::make(),
+                    AssignAction::make(),
                 ]),
             ]);
     }

@@ -19,6 +19,10 @@ use Illuminate\Support\Str;
 class AuditLogger
 {
     /**
+     * Devuelve el batch_id usado. Para agrupar varios eventos de una misma
+     * operacion (p. ej. asignacion + cambio de estado), se pasa el batch_id
+     * devuelto por la primera llamada a las siguientes.
+     *
      * @param  array<string, array{0: mixed, 1: mixed}>  $changes  campo => [anterior, nuevo]
      * @param  array<string, mixed>  $metadata
      */
@@ -29,7 +33,10 @@ class AuditLogger
         ?string $reason = null,
         array $metadata = [],
         ?User $actor = null,
-    ): void {
+        ?string $batch = null,
+    ): string {
+        $batch ??= (string) Str::uuid();
+
         // Sin actor explicito se usa el usuario autenticado; sin ninguno, es el sistema.
         $actor ??= auth()->user();
 
@@ -40,13 +47,13 @@ class AuditLogger
             'event' => $event,
             'reason' => $reason,
             'metadata' => $metadata ?: null,
-            'batch_id' => (string) Str::uuid(),
+            'batch_id' => $batch,
         ];
 
         if ($changes === []) {
             AuditLog::create($base);
 
-            return;
+            return $batch;
         }
 
         foreach ($changes as $field => [$old, $new]) {
@@ -56,6 +63,8 @@ class AuditLogger
                 'new_value' => $this->normalize($new),
             ]);
         }
+
+        return $batch;
     }
 
     /**

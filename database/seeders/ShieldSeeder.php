@@ -40,7 +40,13 @@ class ShieldSeeder extends Seeder
                         "View:SupportRequest",
                         "Create:SupportRequest",
                         "Prioritize:SupportRequest",
-                        "View:MyRequestsStats"
+                        "Assign:SupportRequest",
+                        "ChangeStatus:SupportRequest",
+                        "Comment:SupportRequest",
+                        "Confirm:SupportRequest",
+                        "Reopen:SupportRequest",
+                        "View:MyRequestsStats",
+                        "View:TriageStats"
                     ]
             }
         ]';

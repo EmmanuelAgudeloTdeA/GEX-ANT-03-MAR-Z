@@ -57,6 +57,22 @@ class SupportRequestInfolist
                             ->label('Última actualización')
                             ->since()
                             ->dateTimeTooltip(),
+
+                        TextEntry::make('assignedAgent.name')
+                            ->label('Agente asignado')
+                            ->placeholder('Sin asignar'),
+
+                        // Quien asigno y cuando (HU05) solo lo necesita coordinacion.
+                        TextEntry::make('assignedBy.name')
+                            ->label('Asignada por')
+                            ->placeholder('—')
+                            ->visible(fn (): bool => auth()->user()?->can('Assign:SupportRequest') ?? false),
+
+                        TextEntry::make('assigned_at')
+                            ->label('Asignada el')
+                            ->dateTime()
+                            ->placeholder('—')
+                            ->visible(fn (): bool => auth()->user()?->can('Assign:SupportRequest') ?? false),
                     ])
                     ->columnSpan(1),
             ]);

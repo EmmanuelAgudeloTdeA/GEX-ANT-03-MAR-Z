@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 /**
  * @extends Factory<User>
@@ -42,6 +43,14 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'is_active' => false,
         ]);
+    }
+
+    /**
+     * Assign a business role (solicitante, agente, coordinador, auditor...).
+     */
+    public function withRole(string $role): static
+    {
+        return $this->afterCreating(fn (User $user) => $user->assignRole(Role::findOrCreate($role, 'web')));
     }
 
     /**

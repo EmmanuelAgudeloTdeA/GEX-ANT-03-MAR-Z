@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SupportRequests\Pages;
 
+use App\Filament\Actions\AssignAction;
 use App\Filament\Actions\PrioritizeAction;
 use App\Filament\Resources\SupportRequests\SupportRequestResource;
 use Filament\Resources\Pages\ViewRecord;
@@ -14,6 +15,7 @@ class ViewSupportRequest extends ViewRecord
     {
         return [
             PrioritizeAction::make(),
+            AssignAction::make(),
         ];
     }
 }

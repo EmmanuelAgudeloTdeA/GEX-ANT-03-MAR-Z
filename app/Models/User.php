@@ -8,6 +8,8 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -56,8 +58,27 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(SupportRequest::class, 'requester_id');
     }
 
+    public function requestsAssigned(): HasMany
+    {
+        return $this->hasMany(SupportRequest::class, 'assigned_agent_id');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(RequestComment::class);
+    }
+
     public function auditLogs(): HasMany
     {
         return $this->hasMany(AuditLog::class, 'actor_id');
+    }
+
+    /**
+     * HU05: solo se asigna a usuarios activos con rol agente.
+     */
+    #[Scope]
+    protected function activeAgents(Builder $query): void
+    {
+        $query->where('is_active', true)->role('agente');
     }
 }

@@ -62,7 +62,7 @@ class SupportRequestResource extends Resource
         $user = auth()->user();
 
         return parent::getEloquentQuery()
-            ->with(['category', 'requester'])
+            ->with(['category', 'requester', 'assignedAgent'])
             ->when(
                 $user,
                 fn (Builder $query) => $query->visibleTo($user),
