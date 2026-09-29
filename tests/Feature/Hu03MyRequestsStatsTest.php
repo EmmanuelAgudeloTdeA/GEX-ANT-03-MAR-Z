@@ -6,6 +6,7 @@ use App\Enums\RequestStatus;
 use App\Filament\Widgets\MyRequestsStats;
 use App\Models\SupportRequest;
 use App\Models\User;
+use BezhanSalleh\FilamentShield\Facades\FilamentShield;
 use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\ShieldSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -80,12 +81,31 @@ class Hu03MyRequestsStatsTest extends TestCase
         $this->assertStringContainsString('filters[status][values][0]=closed', $urls[2]);
     }
 
-    public function test_other_roles_do_not_see_the_widget(): void
+    public function test_only_requester_and_super_admin_see_the_widget(): void
     {
-        foreach (['agente', 'coordinador', 'auditor', 'super_admin'] as $role) {
+        foreach (['solicitante' => true, 'super_admin' => true, 'agente' => false, 'coordinador' => false, 'auditor' => false] as $role => $visible) {
             $this->actingAs($this->userWithRole($role));
 
-            $this->assertFalse(MyRequestsStats::canView(), $role);
+            $this->assertSame($visible, MyRequestsStats::canView(), $role);
         }
+    }
+
+    public function test_super_admin_only_counts_the_requests_they_created(): void
+    {
+        $admin = $this->userWithRole('super_admin');
+        SupportRequest::factory()->create(['requester_id' => $admin->id, 'status' => RequestStatus::New]);
+        SupportRequest::factory()->count(4)->create(['status' => RequestStatus::New]);
+
+        $this->actingAs($admin);
+
+        $open = collect((fn () => $this->getStats())->call(new MyRequestsStats))->first();
+
+        $this->assertSame(1, $open->getValue());
+    }
+
+    public function test_custom_permissions_are_translated_on_the_role_screen(): void
+    {
+        $this->assertSame('Priorizar', FilamentShield::getAffixLabel('prioritize'));
+        $this->assertSame('Ver el resumen de mis solicitudes', FilamentShield::getEntityPermissionLabel(MyRequestsStats::class, 'View:MyRequestsStats'));
     }
 }

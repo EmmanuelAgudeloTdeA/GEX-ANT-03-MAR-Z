@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Models\User;
@@ -10,8 +11,10 @@ use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\ShieldSeeder;
 use Filament\Actions\DeleteAction;
 use Filament\Auth\Pages\Login;
+use Filament\Forms\Components\Select;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
@@ -133,6 +136,48 @@ class Hu01AccessTest extends TestCase
 
         Livewire::test(ListUsers::class)
             ->assertOk();
+    }
+
+    public function test_super_admin_role_is_not_offered_when_creating_users(): void
+    {
+        $this->actingAs($this->userWithRole('super_admin'));
+
+        $superAdminRole = Role::findByName('super_admin');
+        $requesterRole = Role::findByName('solicitante');
+
+        Livewire::test(CreateUser::class)
+            ->assertFormFieldExists('roles', fn (Select $field): bool => ! array_key_exists($superAdminRole->id, $field->getOptions())
+                && array_key_exists($requesterRole->id, $field->getOptions()));
+
+        // Aunque se envie el id a mano, el servidor lo rechaza.
+        Livewire::test(CreateUser::class)
+            ->fillForm([
+                'name' => 'Intruso',
+                'email' => 'intruso@example.com',
+                'password' => 'password',
+                'roles' => $superAdminRole->id,
+                'is_active' => true,
+            ])
+            ->call('create')
+            ->assertHasFormErrors(['roles']);
+
+        $this->assertDatabaseMissing('users', ['email' => 'intruso@example.com']);
+    }
+
+    public function test_editing_a_super_admin_keeps_the_role(): void
+    {
+        $this->actingAs($this->userWithRole('super_admin'));
+        $otherAdmin = $this->userWithRole('super_admin');
+
+        Livewire::test(EditUser::class, ['record' => $otherAdmin->getRouteKey()])
+            ->assertFormFieldHidden('roles')
+            ->fillForm(['name' => 'Admin renombrado'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $otherAdmin->refresh();
+        $this->assertSame('Admin renombrado', $otherAdmin->name);
+        $this->assertTrue($otherAdmin->hasRole('super_admin'));
     }
 
     public function test_role_screen_only_offers_permissions_that_policies_honor(): void

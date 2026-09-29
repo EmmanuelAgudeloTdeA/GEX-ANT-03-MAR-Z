@@ -315,6 +315,12 @@ database/
 ├── migrations/          Migraciones de la base de datos
 └── seeders/             Datos iniciales
 
+docs/
+└── plan-tecnico.md      Plan técnico de la plataforma (modelo, roles, flujo y plan por sprint)
+
+lang/es/
+└── shield-permissions.php  Etiquetas en español de los permisos propios en la pantalla de Roles
+
 resources/
 └── ...                  Recursos frontend y vistas
 
