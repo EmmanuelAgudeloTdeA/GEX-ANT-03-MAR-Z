@@ -1,0 +1,73 @@
+name: CI
+
+# Corre en cada PR (y al integrar en main) para que nada se mezcle con
+# pruebas rotas o codigo sin formatear.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Si se sube otro commit al mismo PR, cancela la ejecucion anterior.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pint:
+    name: Pint (estilo)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: intl, mbstring, pdo_sqlite, sqlite3
+          coverage: none
+
+      - name: Cache de Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: composer-8.4-${{ hashFiles('composer.lock') }}
+
+      - name: Instalar dependencias
+        run: |
+          cp .env.example .env
+          composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Verificar formato
+        run: vendor/bin/pint --test
+
+  tests:
+    name: Tests (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 8.3 es el minimo del proyecto; 8.4 es la version de desarrollo.
+        php: ['8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: intl, mbstring, pdo_sqlite, sqlite3
+          coverage: none
+
+      - name: Cache de Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: composer-${{ matrix.php }}-${{ hashFiles('composer.lock') }}
+
+      - name: Instalar dependencias
+        run: |
+          cp .env.example .env
+          composer install --no-interaction --prefer-dist --no-progress
+          php artisan key:generate
+
+      # phpunit.xml ya usa SQLite en memoria.
+      - name: Ejecutar pruebas
+        run: php artisan test
