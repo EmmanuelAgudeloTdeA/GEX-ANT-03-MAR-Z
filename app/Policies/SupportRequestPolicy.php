@@ -33,11 +33,14 @@ class SupportRequestPolicy
             && $supportRequest->status !== RequestStatus::Closed;
     }
 
-    // TODO HU05: permiso Assign:SupportRequest + estado desde el que la matriz
-    // permite pasar a Asignada.
+    /**
+     * HU05: asignar o reasignar, solo en un estado desde el que la matriz
+     * permite pasar a Asignada (Nuevo, Asignada, En progreso, Reabierta).
+     */
     public function assign(User $user, SupportRequest $supportRequest): bool
     {
-        return false;
+        return $user->can('Assign:SupportRequest')
+            && $supportRequest->status->hasTransitionTo(RequestStatus::Assigned);
     }
 
     // TODO HU07: permiso ChangeStatus:SupportRequest + es el agente asignado +

@@ -36,6 +36,7 @@ class RolePermissionSeeder extends Seeder
             'Prioritize:SupportRequest',
             'Assign:SupportRequest',
             'Comment:SupportRequest',
+            'View:TriageStats',
         ],
         'auditor' => [],
     ];

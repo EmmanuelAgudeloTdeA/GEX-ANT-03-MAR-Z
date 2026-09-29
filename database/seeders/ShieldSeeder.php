@@ -45,7 +45,8 @@ class ShieldSeeder extends Seeder
                         "Comment:SupportRequest",
                         "Confirm:SupportRequest",
                         "Reopen:SupportRequest",
-                        "View:MyRequestsStats"
+                        "View:MyRequestsStats",
+                        "View:TriageStats"
                     ]
             }
         ]';
