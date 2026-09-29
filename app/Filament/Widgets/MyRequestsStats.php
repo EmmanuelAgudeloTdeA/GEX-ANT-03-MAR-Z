@@ -9,6 +9,7 @@ use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 
 /**
@@ -27,8 +28,7 @@ class MyRequestsStats extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        $counts = SupportRequest::query()
-            ->visibleTo(auth()->user())
+        $counts = $this->ownRequests()
             ->toBase()
             ->selectRaw('status, count(*) as total')
             ->groupBy('status')
@@ -63,6 +63,18 @@ class MyRequestsStats extends StatsOverviewWidget
     }
 
     /**
+     * Solicitudes creadas por el usuario, siempre dentro de lo que puede ver.
+     */
+    private function ownRequests(): Builder
+    {
+        $user = auth()->user();
+
+        return SupportRequest::query()
+            ->visibleTo($user)
+            ->where('requester_id', $user->getKey());
+    }
+
+    /**
      * @param  array<RequestStatus>  $statuses
      */
     private function listUrl(array $statuses): string
@@ -85,8 +97,7 @@ class MyRequestsStats extends StatsOverviewWidget
     {
         $from = Carbon::today()->subDays(6);
 
-        $perDay = SupportRequest::query()
-            ->visibleTo(auth()->user())
+        $perDay = $this->ownRequests()
             ->where('created_at', '>=', $from)
             ->pluck('created_at')
             ->countBy(fn (Carbon $createdAt): string => $createdAt->toDateString());

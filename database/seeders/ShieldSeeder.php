@@ -38,7 +38,9 @@ class ShieldSeeder extends Seeder
                         "Update:Category",
                         "ViewAny:SupportRequest",
                         "View:SupportRequest",
-                        "Create:SupportRequest"
+                        "Create:SupportRequest",
+                        "Prioritize:SupportRequest",
+                        "View:MyRequestsStats"
                     ]
             }
         ]';
