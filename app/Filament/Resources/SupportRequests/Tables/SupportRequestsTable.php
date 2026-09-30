@@ -5,6 +5,7 @@ namespace App\Filament\Resources\SupportRequests\Tables;
 use App\Enums\RequestPriority;
 use App\Enums\RequestStatus;
 use App\Filament\Actions\AssignAction;
+use App\Filament\Actions\ChangeStatusAction;
 use App\Filament\Actions\PrioritizeAction;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\ViewAction;
@@ -113,6 +114,7 @@ class SupportRequestsTable
                     ViewAction::make(),
                     PrioritizeAction::make(),
                     AssignAction::make(),
+                    ChangeStatusAction::make(),
                 ]),
             ]);
     }
