@@ -5,6 +5,7 @@ namespace App\Filament\Resources\SupportRequests;
 use App\Filament\Resources\SupportRequests\Pages\CreateSupportRequest;
 use App\Filament\Resources\SupportRequests\Pages\ListSupportRequests;
 use App\Filament\Resources\SupportRequests\Pages\ViewSupportRequest;
+use App\Filament\Resources\SupportRequests\RelationManagers\CommentsRelationManager;
 use App\Filament\Resources\SupportRequests\Schemas\SupportRequestForm;
 use App\Filament\Resources\SupportRequests\Schemas\SupportRequestInfolist;
 use App\Filament\Resources\SupportRequests\Tables\SupportRequestsTable;
@@ -77,6 +78,19 @@ class SupportRequestResource extends Resource
             'index' => ListSupportRequests::route('/'),
             'create' => CreateSupportRequest::route('/create'),
             'view' => ViewSupportRequest::route('/{record}'),
+        ];
+    }
+
+    /**
+     * Los comentarios de avance viven dentro de su solicitud (HU06); el historial
+     * de auditoria se agregara en HU11.
+     *
+     * @return array<class-string>
+     */
+    public static function getRelations(): array
+    {
+        return [
+            CommentsRelationManager::class,
         ];
     }
 }
