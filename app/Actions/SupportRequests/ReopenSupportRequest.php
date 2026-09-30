@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\Gate;
 
 class ReopenSupportRequest
 {
-    public function __construct(private AuditLogger $audit)
-    {
-    }
+    public function __construct(private AuditLogger $audit) {}
 
     public function handle(
         User $user,

@@ -6,13 +6,12 @@ use App\Actions\SupportRequests\ConfirmSupportRequest;
 use App\Actions\SupportRequests\ReopenSupportRequest;
 use App\Enums\AuditEvent;
 use App\Enums\RequestStatus;
-use App\Models\AuditLog;
 use App\Models\SupportRequest;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use DomainException;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
 
 class Hu08ConfirmReopenSolutionTest extends TestCase
@@ -82,7 +81,7 @@ class Hu08ConfirmReopenSolutionTest extends TestCase
                 'requester_id' => $requester->getKey(),
             ]);
 
-        $this->expectException(\Illuminate\Auth\Access\AuthorizationException::class);
+        $this->expectException(AuthorizationException::class);
 
         app(ConfirmSupportRequest::class)->handle(
             $otherUser,
@@ -106,7 +105,7 @@ class Hu08ConfirmReopenSolutionTest extends TestCase
                 'requester_id' => $requester->getKey(),
             ]);
 
-        $this->expectException(\Illuminate\Auth\Access\AuthorizationException::class);
+        $this->expectException(AuthorizationException::class);
 
         app(ConfirmSupportRequest::class)->handle(
             $requester,
@@ -202,7 +201,7 @@ class Hu08ConfirmReopenSolutionTest extends TestCase
                 'requester_id' => $requester->getKey(),
             ]);
 
-        $this->expectException(\Illuminate\Auth\Access\AuthorizationException::class);
+        $this->expectException(AuthorizationException::class);
 
         app(ReopenSupportRequest::class)->handle(
             $otherUser,

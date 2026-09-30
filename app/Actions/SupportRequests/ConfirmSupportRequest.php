@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\Gate;
 
 class ConfirmSupportRequest
 {
-    public function __construct(private AuditLogger $audit)
-    {
-    }
+    public function __construct(private AuditLogger $audit) {}
 
     public function handle(User $user, SupportRequest $request): SupportRequest
     {
