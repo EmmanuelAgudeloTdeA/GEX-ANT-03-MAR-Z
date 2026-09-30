@@ -63,16 +63,36 @@ class SupportRequestPolicy
             && $supportRequest->status !== RequestStatus::Closed;
     }
 
-    // TODO HU08: permiso Confirm:SupportRequest + propietario + estado Resuelta.
+    /**
+     * HU08: el solicitante puede confirmar una solucion resuelta.
+     * La confirmacion cierra definitivamente la solicitud.
+     */
     public function confirm(User $user, SupportRequest $supportRequest): bool
     {
-        return false;
+        return $user->can('Confirm:SupportRequest')
+            && $supportRequest->requester_id === $user->getKey()
+            && $supportRequest->status === RequestStatus::Resolved
+            && $supportRequest->status->canTransitionTo(
+                RequestStatus::Closed,
+                $user,
+                $supportRequest
+            );
     }
 
-    // TODO HU08: permiso Reopen:SupportRequest + propietario + estado Resuelta.
+    /**
+     * HU08: el solicitante puede reabrir una solucion resuelta.
+     * La reapertura exige indicar posteriormente el motivo.
+     */
     public function reopen(User $user, SupportRequest $supportRequest): bool
     {
-        return false;
+        return $user->can('Reopen:SupportRequest')
+            && $supportRequest->requester_id === $user->getKey()
+            && $supportRequest->status === RequestStatus::Resolved
+            && $supportRequest->status->canTransitionTo(
+                RequestStatus::Reopened,
+                $user,
+                $supportRequest
+            );
     }
 
     // Las solicitudes no se editan ni se borran (PD-07): los cambios se hacen

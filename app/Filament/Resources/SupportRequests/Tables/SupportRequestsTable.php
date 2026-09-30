@@ -30,7 +30,7 @@ class SupportRequestsTable
                     ->label('Título')
                     ->limit(60)
                     ->tooltip(fn (TextColumn $column): ?string => strlen((string) $column->getState()) > 60 ? $column->getState() : null)
-                    ->searchable(),
+                    ->searchable(['title', 'description']),
 
                 TextColumn::make('category.name')
                     ->label('Categoría')
