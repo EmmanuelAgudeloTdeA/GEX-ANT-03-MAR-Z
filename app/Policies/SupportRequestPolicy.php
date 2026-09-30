@@ -51,11 +51,16 @@ class SupportRequestPolicy
                 ->contains(fn (RequestStatus $status): bool => $status !== RequestStatus::Assigned);
     }
 
-    // TODO HU06: permiso Comment:SupportRequest + agente asignado o
-    // coordinador (PD-06) + estado distinto de Cerrada.
+    /**
+     * HU06: comenta el agente asignado o el coordinador (PD-06) y solo mientras
+     * la solicitud siga abierta; el texto no vacio lo revisa el servicio.
+     */
     public function comment(User $user, SupportRequest $supportRequest): bool
     {
-        return false;
+        return $user->can('Comment:SupportRequest')
+            && ($supportRequest->assigned_agent_id === $user->getKey()
+                || $user->hasAnyRole(['coordinador', 'super_admin']))
+            && $supportRequest->status !== RequestStatus::Closed;
     }
 
     // TODO HU08: permiso Confirm:SupportRequest + propietario + estado Resuelta.
