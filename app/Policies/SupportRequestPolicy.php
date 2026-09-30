@@ -43,11 +43,12 @@ class SupportRequestPolicy
             && $supportRequest->status->hasTransitionTo(RequestStatus::Assigned);
     }
 
-    // TODO HU07: permiso ChangeStatus:SupportRequest + es el agente asignado +
-    // existe al menos un destino en allowedTargetsFor() distinto de Asignada.
     public function changeStatus(User $user, SupportRequest $supportRequest): bool
     {
-        return false;
+        return $user->can('ChangeStatus:SupportRequest')
+            && $supportRequest->assigned_agent_id === $user->getKey()
+            && collect($supportRequest->status->allowedTargetsFor($user, $supportRequest))
+                ->contains(fn (RequestStatus $status): bool => $status !== RequestStatus::Assigned);
     }
 
     // TODO HU06: permiso Comment:SupportRequest + agente asignado o
