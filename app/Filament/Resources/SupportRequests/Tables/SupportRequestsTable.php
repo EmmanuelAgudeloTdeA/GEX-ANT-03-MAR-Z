@@ -9,7 +9,10 @@ use App\Filament\Actions\ChangeStatusAction;
 use App\Filament\Actions\PrioritizeAction;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -108,7 +111,33 @@ class SupportRequestsTable
                     ->relationship('category', 'name')
                     ->multiple()
                     ->preload(),
+
+                // Rango de fechas de creacion: lo necesitan los indicadores por periodo
+                // y la exportacion (plan tecnico 25.2). whereDate compara solo el dia,
+                // asi que "hasta" incluye el dia completo.
+                Filter::make('created_at')
+                    ->label('Fecha de creación')
+                    ->form([
+                        DatePicker::make('from')->label('Desde'),
+                        DatePicker::make('until')->label('Hasta'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                filled($data['from'] ?? null),
+                                fn (Builder $query): Builder => $query->whereDate('created_at', '>=', $data['from'])
+                            )
+                            ->when(
+                                filled($data['until'] ?? null),
+                                fn (Builder $query): Builder => $query->whereDate('created_at', '<=', $data['until'])
+                            );
+                    }),
             ])
+            // Filtros plegables arriba del contenido y recordados al recargar, para que
+            // una vista filtrada se pueda volver a abrir igual (plan tecnico 20.1 y 25.3).
+            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
+            ->persistFiltersInSession()
+            ->persistSearchInSession()
             ->recordActions([
                 ActionGroup::make([
                     ViewAction::make(),
