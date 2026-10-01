@@ -12,8 +12,7 @@ class RolePermissionSeeder extends Seeder
     /**
      * Roles funcionales del caso MAR-Z y sus permisos Shield (Tech Plan §11.3).
      *
-     * Incluye los permisos de las HU hasta el Sprint 2. Los de HU06-HU08 se
-     * registran desde ya, pero su metodo de Policy niega hasta que se implemente.
+     * Incluye los permisos de las HU implementadas hasta el momento.
      */
     private const ROLE_PERMISSIONS = [
         'solicitante' => [
@@ -37,8 +36,11 @@ class RolePermissionSeeder extends Seeder
             'Assign:SupportRequest',
             'Comment:SupportRequest',
             'View:TriageStats',
+            'ViewHistory:SupportRequest',
         ],
-        'auditor' => [],
+        'auditor' => [
+            'ViewHistory:SupportRequest',
+        ],
     ];
 
     public function run(): void
@@ -49,8 +51,16 @@ class RolePermissionSeeder extends Seeder
             $role = Role::findOrCreate($roleName, 'web');
 
             $role->syncPermissions(
-                collect($permissions)->map(fn (string $name) => Permission::findOrCreate($name, 'web'))
+                collect($permissions)->map(
+                    fn (string $name) => Permission::findOrCreate($name, 'web')
+                )
             );
         }
+
+        $superAdmin = Role::findOrCreate('super_admin', 'web');
+
+        $superAdmin->givePermissionTo(
+            Permission::findOrCreate('ViewHistory:SupportRequest', 'web')
+        );
     }
 }
