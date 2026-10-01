@@ -212,6 +212,7 @@ return [
                 'confirm',
                 'reopen',
                 'export',
+                'viewHistory',
             ],
             // Las categorias se desactivan, no se borran.
             CategoryResource::class => [

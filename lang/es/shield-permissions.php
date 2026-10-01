@@ -15,6 +15,7 @@ return [
     'confirm' => 'Confirmar solución',
     'reopen' => 'Reabrir',
     'export' => 'Exportar reporte',
+    'view_history' => 'Ver historial',
 
     'view_my_requests_stats' => 'Ver el resumen de mis solicitudes',
     'view_triage_stats' => 'Ver el resumen de triaje',

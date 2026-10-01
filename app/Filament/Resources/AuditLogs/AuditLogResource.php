@@ -5,6 +5,8 @@ namespace App\Filament\Resources\AuditLogs;
 use App\Enums\AuditEvent;
 use App\Enums\RequestPriority;
 use App\Enums\RequestStatus;
+use App\Filament\Resources\AuditLogs\Pages\ListAuditLogs;
+use App\Filament\Resources\AuditLogs\Pages\ViewAuditLog;
 use App\Models\AuditLog;
 use App\Models\User;
 use BackedEnum;
@@ -285,6 +287,15 @@ class AuditLogResource extends Resource
                     ->label('Ver'),
             ])
             ->toolbarActions([]);
+    }
+
+    // Solo lista y detalle: la auditoria no se crea ni se edita desde el panel.
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListAuditLogs::route('/'),
+            'view' => ViewAuditLog::route('/{record}'),
+        ];
     }
 
     private static function formatValue(?string $field, ?string $value): ?string
