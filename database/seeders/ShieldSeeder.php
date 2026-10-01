@@ -47,7 +47,8 @@ class ShieldSeeder extends Seeder
                         "Reopen:SupportRequest",
                         "Export:SupportRequest",
                         "View:MyRequestsStats",
-                        "View:TriageStats"
+                        "View:TriageStats",
+                        "View:CoordinatorIndicators"
                     ]
             }
         ]';

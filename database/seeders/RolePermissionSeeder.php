@@ -37,6 +37,7 @@ class RolePermissionSeeder extends Seeder
             'Export:SupportRequest',
             'Comment:SupportRequest',
             'View:TriageStats',
+            'View:CoordinatorIndicators',
             'ViewHistory:SupportRequest',
         ],
         'auditor' => [
