@@ -96,6 +96,18 @@ class SupportRequestPolicy
     }
 
     /**
+     * HU11: consultar el historial de auditoria de una solicitud.
+     *
+     * El acceso se controla mediante el permiso Shield. La Policy no
+     * permite modificar la auditoria; esa restriccion pertenece a
+     * AuditLogPolicy.
+     */
+    public function viewHistory(User $user, SupportRequest $supportRequest): bool
+    {
+        return $user->can('ViewHistory:SupportRequest');
+    }
+
+    /**
      * HU12: exportar el reporte. El alcance lo pone la query de la tabla
      * (visibleTo + filtros), no la Policy.
      */
