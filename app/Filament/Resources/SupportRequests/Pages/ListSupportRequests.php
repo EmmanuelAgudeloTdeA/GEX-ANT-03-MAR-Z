@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SupportRequests\Pages;
 
+use App\Filament\Actions\ExportSupportRequestsAction;
 use App\Filament\Resources\SupportRequests\SupportRequestResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
@@ -13,6 +14,7 @@ class ListSupportRequests extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            ExportSupportRequestsAction::make(),
             CreateAction::make(),
         ];
     }

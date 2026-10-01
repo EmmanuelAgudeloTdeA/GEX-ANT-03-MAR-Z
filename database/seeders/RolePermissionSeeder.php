@@ -35,6 +35,7 @@ class RolePermissionSeeder extends Seeder
             'View:SupportRequest',
             'Prioritize:SupportRequest',
             'Assign:SupportRequest',
+            'Export:SupportRequest',
             'Comment:SupportRequest',
             'View:TriageStats',
         ],

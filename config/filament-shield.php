@@ -158,6 +158,7 @@ return [
             'forceDeleteAny',
             'restoreAny',
             'reorder',
+            'export',
         ],
     ],
 
@@ -210,6 +211,7 @@ return [
                 'comment',
                 'confirm',
                 'reopen',
+                'export',
             ],
             // Las categorias se desactivan, no se borran.
             CategoryResource::class => [
