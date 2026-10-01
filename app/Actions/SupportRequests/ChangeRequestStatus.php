@@ -20,20 +20,42 @@ class ChangeRequestStatus
         Gate::forUser($user)->authorize('changeStatus', $request);
 
         return DB::transaction(function () use ($user, $request, $status): SupportRequest {
-            $request = SupportRequest::query()->lockForUpdate()->findOrFail($request->getKey());
+            $request = SupportRequest::query()
+                ->lockForUpdate()
+                ->findOrFail($request->getKey());
 
             if (! $request->status->canTransitionTo($status, $user, $request)) {
-                throw new DomainException('La solicitud no puede cambiar a ese estado desde su estado actual.');
+                throw new DomainException(
+                    'La solicitud no puede cambiar a ese estado desde su estado actual.'
+                );
             }
 
             $previous = $request->status;
+            $previousResolvedAt = $request->resolved_at;
+
             $request->status = $status;
+
+            if ($status === RequestStatus::Resolved) {
+                $request->resolved_at = now();
+            }
+
             $request->save();
+
+            $changes = [
+                'status' => [$previous, $status],
+            ];
+
+            if ($status === RequestStatus::Resolved) {
+                $changes['resolved_at'] = [
+                    $previousResolvedAt,
+                    $request->resolved_at,
+                ];
+            }
 
             $this->audit->record(
                 $request,
                 AuditEvent::StatusChanged,
-                ['status' => [$previous, $status]],
+                $changes,
                 actor: $user,
             );
 
