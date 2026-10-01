@@ -108,4 +108,17 @@ class SupportRequest extends Model
     {
         return static::query()->visibleTo($user)->whereKey($this->getKey())->exists();
     }
+
+    /**
+     * Tiempo de ciclo: creacion -> cierre confirmado (PD-08). Solo existe para
+     * solicitudes cerradas. Lo usan el reporte (HU12) y los indicadores (HU10).
+     */
+    public function cycleTimeInHours(): ?float
+    {
+        if ($this->closed_at === null) {
+            return null;
+        }
+
+        return round($this->created_at->diffInMinutes($this->closed_at) / 60, 2);
+    }
 }

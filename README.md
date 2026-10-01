@@ -220,6 +220,16 @@ npm run dev
 
 Mantén este proceso ejecutándose mientras trabajas en el proyecto para que Vite compile y actualice los recursos frontend.
 
+## 4. Iniciar la cola
+
+La exportación de reportes CSV (HU12) se procesa en la cola `database`. En otra terminal, dentro del proyecto, ejecuta:
+
+```powershell
+php artisan queue:work
+```
+
+Sin este proceso la exportación queda pendiente y no llega la notificación con el enlace de descarga.
+
 ---
 
 # Acceder al panel administrativo

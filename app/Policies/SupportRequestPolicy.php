@@ -107,6 +107,15 @@ class SupportRequestPolicy
         return $user->can('ViewHistory:SupportRequest');
     }
 
+    /**
+     * HU12: exportar el reporte. El alcance lo pone la query de la tabla
+     * (visibleTo + filtros), no la Policy.
+     */
+    public function export(User $user): bool
+    {
+        return $user->can('Export:SupportRequest');
+    }
+
     // Las solicitudes no se editan ni se borran (PD-07): los cambios se hacen
     // con acciones trazables. Aplica tambien a super_admin.
     public function update(User $user, SupportRequest $supportRequest): bool
