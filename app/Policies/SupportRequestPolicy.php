@@ -95,6 +95,18 @@ class SupportRequestPolicy
             );
     }
 
+    /**
+     * HU11: consultar el historial de auditoria de una solicitud.
+     *
+     * El acceso se controla mediante el permiso Shield. La Policy no
+     * permite modificar la auditoria; esa restriccion pertenece a
+     * AuditLogPolicy.
+     */
+    public function viewHistory(User $user, SupportRequest $supportRequest): bool
+    {
+        return $user->can('ViewHistory:SupportRequest');
+    }
+
     // Las solicitudes no se editan ni se borran (PD-07): los cambios se hacen
     // con acciones trazables. Aplica tambien a super_admin.
     public function update(User $user, SupportRequest $supportRequest): bool
