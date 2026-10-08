@@ -3,12 +3,10 @@
 namespace App\Filament\Resources\AuditLogs;
 
 use App\Enums\AuditEvent;
-use App\Enums\RequestPriority;
-use App\Enums\RequestStatus;
 use App\Filament\Resources\AuditLogs\Pages\ListAuditLogs;
 use App\Filament\Resources\AuditLogs\Pages\ViewAuditLog;
 use App\Models\AuditLog;
-use App\Models\User;
+use App\Support\Audit\AuditChangeMapper;
 use BackedEnum;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
@@ -103,6 +101,9 @@ class AuditLogResource extends Resource
 
                         TextEntry::make('field')
                             ->label('Campo')
+                            ->formatStateUsing(
+                                fn (?string $state): ?string => AuditChangeMapper::fieldLabel($state)
+                            )
                             ->placeholder('—'),
                     ]),
 
@@ -111,7 +112,7 @@ class AuditLogResource extends Resource
                         TextEntry::make('old_value')
                             ->label('Valor anterior')
                             ->formatStateUsing(
-                                fn (?string $state, AuditLog $record): ?string => self::formatValue(
+                                fn (?string $state, AuditLog $record): ?string => AuditChangeMapper::value(
                                     $record->field,
                                     $state
                                 )
@@ -121,7 +122,7 @@ class AuditLogResource extends Resource
                         TextEntry::make('new_value')
                             ->label('Valor nuevo')
                             ->formatStateUsing(
-                                fn (?string $state, AuditLog $record): ?string => self::formatValue(
+                                fn (?string $state, AuditLog $record): ?string => AuditChangeMapper::value(
                                     $record->field,
                                     $state
                                 )
@@ -171,13 +172,16 @@ class AuditLogResource extends Resource
 
                 Tables\Columns\TextColumn::make('field')
                     ->label('Campo')
+                    ->formatStateUsing(
+                        fn (?string $state): ?string => AuditChangeMapper::fieldLabel($state)
+                    )
                     ->placeholder('—')
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('old_value')
                     ->label('Anterior')
                     ->formatStateUsing(
-                        fn (?string $state, AuditLog $record): ?string => self::formatValue(
+                        fn (?string $state, AuditLog $record): ?string => AuditChangeMapper::value(
                             $record->field,
                             $state
                         )
@@ -187,7 +191,7 @@ class AuditLogResource extends Resource
                 Tables\Columns\TextColumn::make('new_value')
                     ->label('Nuevo')
                     ->formatStateUsing(
-                        fn (?string $state, AuditLog $record): ?string => self::formatValue(
+                        fn (?string $state, AuditLog $record): ?string => AuditChangeMapper::value(
                             $record->field,
                             $state
                         )
@@ -296,40 +300,5 @@ class AuditLogResource extends Resource
             'index' => ListAuditLogs::route('/'),
             'view' => ViewAuditLog::route('/{record}'),
         ];
-    }
-
-    private static function formatValue(?string $field, ?string $value): ?string
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        return match ($field) {
-            'priority' => self::formatPriority($value),
-            'status' => self::formatStatus($value),
-            'assigned_agent_id' => self::formatAssignedAgent($value),
-            default => $value,
-        };
-    }
-
-    private static function formatPriority(string $value): string
-    {
-        $priority = RequestPriority::tryFrom((int) $value);
-
-        return $priority?->getLabel() ?? $value;
-    }
-
-    private static function formatStatus(string $value): string
-    {
-        $status = RequestStatus::tryFrom($value);
-
-        return $status?->getLabel() ?? $value;
-    }
-
-    private static function formatAssignedAgent(string $value): string
-    {
-        $agent = User::query()->find($value);
-
-        return $agent?->code ?? $value;
     }
 }
