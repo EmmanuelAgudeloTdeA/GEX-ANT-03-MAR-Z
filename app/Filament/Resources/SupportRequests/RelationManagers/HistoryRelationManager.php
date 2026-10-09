@@ -2,10 +2,8 @@
 
 namespace App\Filament\Resources\SupportRequests\RelationManagers;
 
-use App\Enums\RequestPriority;
-use App\Enums\RequestStatus;
 use App\Models\SupportRequest;
-use App\Models\User;
+use App\Support\Audit\AuditChangeMapper;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -59,12 +57,15 @@ class HistoryRelationManager extends RelationManager
 
                 TextColumn::make('field')
                     ->label('Campo')
+                    ->formatStateUsing(
+                        fn (?string $state): ?string => AuditChangeMapper::fieldLabel($state)
+                    )
                     ->placeholder('—'),
 
                 TextColumn::make('old_value')
                     ->label('Anterior')
                     ->formatStateUsing(
-                        fn (?string $state, Model $record): string => $this->formatValue(
+                        fn (?string $state, Model $record): ?string => AuditChangeMapper::value(
                             $record->field,
                             $state,
                         )
@@ -74,7 +75,7 @@ class HistoryRelationManager extends RelationManager
                 TextColumn::make('new_value')
                     ->label('Nuevo')
                     ->formatStateUsing(
-                        fn (?string $state, Model $record): string => $this->formatValue(
+                        fn (?string $state, Model $record): ?string => AuditChangeMapper::value(
                             $record->field,
                             $state,
                         )
@@ -93,40 +94,5 @@ class HistoryRelationManager extends RelationManager
             ->recordActions([])
             ->bulkActions([])
             ->headerActions([]);
-    }
-
-    private function formatValue(?string $field, ?string $value): ?string
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        return match ($field) {
-            'priority' => $this->formatPriority($value),
-            'status' => $this->formatStatus($value),
-            'assigned_agent_id' => $this->formatAssignedAgent($value),
-            default => $value,
-        };
-    }
-
-    private function formatPriority(string $value): string
-    {
-        $priority = RequestPriority::tryFrom((int) $value);
-
-        return $priority?->getLabel() ?? $value;
-    }
-
-    private function formatStatus(string $value): string
-    {
-        $status = RequestStatus::tryFrom($value);
-
-        return $status?->getLabel() ?? $value;
-    }
-
-    private function formatAssignedAgent(string $value): string
-    {
-        $agent = User::query()->find($value);
-
-        return $agent?->code ?? $value;
     }
 }
